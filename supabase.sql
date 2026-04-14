@@ -37,3 +37,29 @@ ALTER TABLE recipe_tags ENABLE ROW LEVEL SECURITY;
 -- With RLS enabled and no matching policies, all anon key requests are denied.
 -- Authentication and authorization are enforced in the server-side API routes
 -- via Clerk before any Supabase query runs.
+
+-- Create user_profiles table
+CREATE TABLE user_profiles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  clerk_user_id TEXT UNIQUE NOT NULL,
+  username TEXT UNIQUE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create follows table
+CREATE TABLE follows (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  follower_id TEXT NOT NULL,   -- Clerk user_id of the follower
+  following_id TEXT NOT NULL,  -- Clerk user_id of the person being followed
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT unique_follow UNIQUE(follower_id, following_id)
+);
+
+CREATE INDEX idx_user_profiles_username ON user_profiles(username);
+CREATE INDEX idx_user_profiles_clerk_user_id ON user_profiles(clerk_user_id);
+CREATE INDEX idx_follows_follower ON follows(follower_id);
+CREATE INDEX idx_follows_following ON follows(following_id);
+
+ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE follows ENABLE ROW LEVEL SECURITY;

@@ -20,3 +20,11 @@ export interface RecipeTag {
 export interface RecipeWithTags extends Recipe {
   tags: string[];
 }
+
+export interface UserProfile {
+  id: string;
+  clerk_user_id: string;
+  username: string;
+  created_at: string;
+  updated_at: string;
+}

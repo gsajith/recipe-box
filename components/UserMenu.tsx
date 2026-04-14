@@ -13,6 +13,7 @@ export function UserMenu() {
   const router = useRouter();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [username, setUsername] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -25,9 +26,24 @@ export function UserMenu() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    fetch("/api/users/me")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.username) setUsername(data.username);
+      })
+      .catch(() => {});
+  }, []);
+
   if (!user) return null;
 
-  const displayName = user.firstName || user.fullName || "Account";
+  const displayName = username
+    ? username
+    : user.firstName || user.fullName || "Account";
+  const profileHref = username ? `/user/${username}` : `/user/${user.id}`;
+  const isOnProfile = username
+    ? pathname === `/user/${username}`
+    : pathname === `/user/${user.id}`;
 
   return (
     <div className={styles.container} ref={ref}>
@@ -54,8 +70,8 @@ export function UserMenu() {
             Home
           </Link>
           <Link
-            href={`/user/${user.id}`}
-            className={`${styles.item} ${pathname === `/user/${user.id}` ? styles.itemActive : ""}`}
+            href={profileHref}
+            className={`${styles.item} ${isOnProfile ? styles.itemActive : ""}`}
             onClick={() => setOpen(false)}>
             <User size={15} />
             Profile
