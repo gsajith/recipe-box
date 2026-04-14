@@ -23,6 +23,13 @@ export default function Home() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [allTagsShown, setAllTagsShown] = useState(false);
+  // const [debugMode, setDebugMode] = useState(false);
+
+  // // Detect debug mode via ?debug=true query param
+  // useEffect(() => {
+  //   const params = new URLSearchParams(window.location.search);
+  //   setDebugMode(params.get("debug") === "true");
+  // }, []);
 
   // Fetch recipes when user is loaded
   useEffect(() => {
@@ -179,12 +186,19 @@ export default function Home() {
     recipeId: string,
     title: string,
     thumbnailUrl: string | null,
+    cookTime: string | null,
+    servings: string | null,
   ) => {
     try {
       const response = await fetch(`/api/recipes/${recipeId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, thumbnail_url: thumbnailUrl }),
+        body: JSON.stringify({
+          title,
+          thumbnail_url: thumbnailUrl,
+          cook_time: cookTime,
+          servings,
+        }),
       });
 
       if (!response.ok) throw new Error("Failed to update recipe");
@@ -194,12 +208,42 @@ export default function Home() {
       // Update the selected recipe
       setSelectedRecipe(updatedRecipe);
 
-      // Update recipes list
-      setRecipes((prev) =>
-        prev.map((r) => (r.id === recipeId ? updatedRecipe : r)),
-      );
+      // Update recipes list and filter
+      setRecipes((prev) => {
+        const updated = prev.map((r) =>
+          r.id === recipeId ? updatedRecipe : r,
+        );
+        filterRecipes(updated, searchQuery);
+        return updated;
+      });
     } catch (error) {
       console.error("Error updating recipe:", error);
+      throw error;
+    }
+  };
+
+  const handleRefetch = async (recipeId: string) => {
+    try {
+      const response = await fetch(`/api/recipes/${recipeId}/refetch`, {
+        method: "POST",
+      });
+
+      if (!response.ok) throw new Error("Failed to refetch recipe");
+
+      const updatedRecipe = await response.json();
+
+      setSelectedRecipe((prev) =>
+        prev ? { ...prev, ...updatedRecipe } : null,
+      );
+      setRecipes((prev) => {
+        const updated = prev.map((r) =>
+          r.id === recipeId ? { ...r, ...updatedRecipe } : r,
+        );
+        filterRecipes(updated, searchQuery);
+        return updated;
+      });
+    } catch (error) {
+      console.error("Error refetching recipe:", error);
       throw error;
     }
   };
@@ -231,20 +275,25 @@ export default function Home() {
       <div className={styles.landingPage}>
         <nav className={styles.landingNav}>
           <span className={styles.landingLogo}>Recipe Box</span>
-          <a href="/sign-in" className={styles.navSignIn}>Sign in &rarr;</a>
+          <a href="/sign-in" className={styles.navSignIn}>
+            Sign in &rarr;
+          </a>
         </nav>
 
         <section className={styles.hero}>
           <div className={styles.heroInner}>
             <span className={styles.heroBadge}>Free to use</span>
             <h1 className={styles.heroTitle}>
-              Every recipe<br />
-              you love,<br />
+              Every recipe
+              <br />
+              you love,
+              <br />
               <em>beautifully saved.</em>
             </h1>
             <p className={styles.heroSubtitle}>
-              Paste any recipe URL and we&apos;ll save it instantly — title, photo,
-              and source included. Tag it, search it, find it whenever you&apos;re ready to cook.
+              Paste any recipe URL and we&apos;ll save it instantly — title,
+              photo, and source included. Tag it, search it, find it whenever
+              you&apos;re ready to cook.
             </p>
             <a href="/sign-in" className={styles.ctaButton}>
               Start saving recipes
@@ -265,7 +314,10 @@ export default function Home() {
                 </div>
                 <span className={styles.featureNum}>01</span>
                 <h3>Save from anywhere</h3>
-                <p>Paste a link from any cooking site. We fetch the title, photo, and source automatically.</p>
+                <p>
+                  Paste a link from any cooking site. We fetch the title, photo,
+                  and source automatically.
+                </p>
               </div>
               <div className={styles.featureCard}>
                 <div className={styles.featureIconWrap}>
@@ -273,7 +325,10 @@ export default function Home() {
                 </div>
                 <span className={styles.featureNum}>02</span>
                 <h3>Organize with tags</h3>
-                <p>Build your own system. Tag by cuisine, meal type, difficulty — then filter in seconds.</p>
+                <p>
+                  Build your own system. Tag by cuisine, meal type, difficulty —
+                  then filter in seconds.
+                </p>
               </div>
               <div className={styles.featureCard}>
                 <div className={styles.featureIconWrap}>
@@ -281,7 +336,10 @@ export default function Home() {
                 </div>
                 <span className={styles.featureNum}>03</span>
                 <h3>Find it instantly</h3>
-                <p>Fast search across everything you&apos;ve saved. No more hunting through browser bookmarks.</p>
+                <p>
+                  Fast search across everything you&apos;ve saved. No more
+                  hunting through browser bookmarks.
+                </p>
               </div>
             </div>
           </div>
@@ -290,7 +348,9 @@ export default function Home() {
         <section className={styles.landingCta}>
           <h2>Ready to start cooking?</h2>
           <p>Build your recipe collection in minutes.</p>
-          <a href="/sign-in" className={styles.ctaButton}>Sign in with Google</a>
+          <a href="/sign-in" className={styles.ctaButton}>
+            Sign in with Google
+          </a>
         </section>
       </div>
     );
@@ -398,7 +458,9 @@ export default function Home() {
           recipe={selectedRecipe}
           onTagsUpdate={handleUpdateTags}
           onMetadataUpdate={handleUpdateMetadata}
+          onRefetch={handleRefetch}
           onClose={() => setSelectedRecipe(null)}
+          // debugMode={debugMode}
         />
       )}
     </div>

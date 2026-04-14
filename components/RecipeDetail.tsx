@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { X, Edit2, ExternalLink } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { X, Edit2, ExternalLink, Clock, Users, RefreshCw } from "lucide-react";
 import { RecipeWithTags } from "@/lib/types";
 import styles from "./RecipeDetail.module.css";
 
@@ -12,23 +12,47 @@ interface RecipeDetailProps {
     recipeId: string,
     title: string,
     thumbnailUrl: string | null,
+    cookTime: string | null,
+    servings: string | null,
   ) => Promise<void>;
+  onRefetch?: (recipeId: string) => Promise<void>;
   onClose: () => void;
+  debugMode?: boolean;
 }
 
 export function RecipeDetail({
   recipe,
   onTagsUpdate,
   onMetadataUpdate,
+  onRefetch,
   onClose,
+  debugMode = false,
 }: RecipeDetailProps) {
   const tagInputRef = useRef<HTMLInputElement>(null);
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>(recipe.tags || []);
   const [title, setTitle] = useState(recipe.title);
   const [thumbnailUrl, setThumbnailUrl] = useState(recipe.thumbnail_url || "");
+  const [cookTime, setCookTime] = useState(recipe.cook_time || "");
+  const [servings, setServings] = useState(recipe.servings || "");
   const [isEditingMetadata, setIsEditingMetadata] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isRefetching, setIsRefetching] = useState(false);
+
+  // Sync all state when recipe changes (including refetch updates)
+  useEffect(() => {
+    setTitle(recipe.title);
+    setThumbnailUrl(recipe.thumbnail_url || "");
+    setCookTime(recipe.cook_time || "");
+    setServings(recipe.servings || "");
+    setTags(recipe.tags || []);
+  }, [
+    recipe.id,
+    recipe.title,
+    recipe.thumbnail_url,
+    recipe.cook_time,
+    recipe.servings,
+  ]);
 
   const mealTypeTags = [
     "breakfast",
@@ -93,12 +117,31 @@ export function RecipeDetail({
     if (!onMetadataUpdate) return;
     setIsSaving(true);
     try {
-      await onMetadataUpdate(recipe.id, title, thumbnailUrl || null);
+      await onMetadataUpdate(
+        recipe.id,
+        title,
+        thumbnailUrl || null,
+        cookTime || null,
+        servings || null,
+      );
       setIsEditingMetadata(false);
     } finally {
       setIsSaving(false);
     }
   };
+
+  const handleRefetch = async () => {
+    if (!onRefetch) return;
+    setIsRefetching(true);
+    try {
+      await onRefetch(recipe.id);
+    } finally {
+      setIsRefetching(false);
+    }
+  };
+
+  const displayCookTime = cookTime || "";
+  const displayServings = servings || "";
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
@@ -106,6 +149,15 @@ export function RecipeDetail({
         <button className={styles.closeBtn} onClick={onClose} title="Close">
           <X size={20} />
         </button>
+        {onRefetch && debugMode && (
+          <button
+            onClick={handleRefetch}
+            className={styles.refetchBtn}
+            disabled={isRefetching}
+            title="Re-fetch metadata">
+            <RefreshCw size={16} />
+          </button>
+        )}
 
         <div className={styles.header}>
           {recipe.thumbnail_url && (
@@ -146,6 +198,26 @@ export function RecipeDetail({
                   )}
                 </div>
               </div>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Cook Time</label>
+                <input
+                  type="text"
+                  value={cookTime}
+                  onChange={(e) => setCookTime(e.target.value)}
+                  className={styles.input}
+                  placeholder="e.g. 30 min, 1 hr 15 min"
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Servings</label>
+                <input
+                  type="text"
+                  value={servings}
+                  onChange={(e) => setServings(e.target.value)}
+                  className={styles.input}
+                  placeholder="e.g. 4, 4-6 servings"
+                />
+              </div>
               <div className={styles.buttonGroup}>
                 <button
                   onClick={handleSaveMetadata}
@@ -158,6 +230,8 @@ export function RecipeDetail({
                     setIsEditingMetadata(false);
                     setTitle(recipe.title);
                     setThumbnailUrl(recipe.thumbnail_url || "");
+                    setCookTime(recipe.cook_time || "");
+                    setServings(recipe.servings || "");
                   }}
                   className={styles.cancelBtn}>
                   Cancel
@@ -175,6 +249,25 @@ export function RecipeDetail({
                   <Edit2 size={16} />
                 </button>
               </div>
+              {(displayCookTime || displayServings) && (
+                <div className={styles.metaRow}>
+                  {displayCookTime && (
+                    <span className={styles.metaItem}>
+                      <Clock size={12} />
+                      {displayCookTime}
+                    </span>
+                  )}
+                  {displayCookTime && displayServings && (
+                    <span className={styles.metaDot}>·</span>
+                  )}
+                  {displayServings && (
+                    <span className={styles.metaItem}>
+                      <Users size={12} />
+                      {displayServings}
+                    </span>
+                  )}
+                </div>
+              )}
               <a
                 href={recipe.url}
                 target="_blank"
@@ -183,6 +276,7 @@ export function RecipeDetail({
                 <ExternalLink size={12} />
                 {new URL(recipe.url).hostname.replace(/^www\./, "")}
               </a>
+              <hr className={styles.divider} />
             </>
           )}
 

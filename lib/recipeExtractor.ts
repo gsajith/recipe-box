@@ -4,6 +4,8 @@ import * as cheerio from "cheerio";
 interface RecipeMetadata {
   title: string;
   thumbnailUrl: string | null;
+  cookTime: string | null;
+  servings: string | null;
 }
 
 /**
@@ -52,39 +54,15 @@ async function extractYouTubeMetaWithTitle(url: URL): Promise<RecipeMetadata> {
   return {
     title,
     thumbnailUrl,
+    cookTime: null,
+    servings: null,
   };
 }
 
-function isYouTubeUrl(url: URL): boolean {
+export function isYouTubeUrl(url: URL): boolean {
   return (
     url.hostname.includes("youtube.com") || url.hostname.includes("youtu.be")
   );
-}
-
-function extractYouTubeMeta(url: URL): RecipeMetadata {
-  let videoId: string | null = null;
-
-  if (url.hostname.includes("youtu.be")) {
-    videoId = url.pathname.slice(1);
-  } else {
-    videoId = url.searchParams.get("v");
-  }
-
-  if (!videoId) {
-    throw new Error("Invalid YouTube URL");
-  }
-
-  // Try to extract title from the URL query parameters if available
-  // YouTube doesn't provide title in URL by default, so we'll need to fetch it
-  let title = "YouTube Recipe Video";
-
-  // Use YouTube's standard thumbnail URL
-  const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-
-  return {
-    title,
-    thumbnailUrl,
-  };
 }
 
 async function extractYouTubeTitle(videoId: string): Promise<string> {
@@ -137,6 +115,18 @@ async function extractYouTubeTitle(videoId: string): Promise<string> {
     console.error("Error extracting YouTube title:", error);
     return "YouTube Video";
   }
+}
+
+/** Convert ISO 8601 duration (e.g. "PT1H30M") to human-readable "1 hr 30 min" */
+function parseIsoDuration(duration: string): string | null {
+  const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?/i);
+  if (!match) return null;
+  const h = parseInt(match[1] || "0");
+  const m = parseInt(match[2] || "0");
+  if (h === 0 && m === 0) return null;
+  if (h === 0) return `${m} min`;
+  if (m === 0) return `${h} hr`;
+  return `${h} hr ${m} min`;
 }
 
 async function extractOpenGraphMeta(url: string): Promise<RecipeMetadata> {
@@ -213,9 +203,118 @@ async function extractOpenGraphMeta(url: string): Promise<RecipeMetadata> {
       thumbnailUrl = undefined;
     }
 
+    // Extract cook time and servings via cascading fallbacks
+    let cookTime: string | null = null;
+    let servings: string | null = null;
+
+    // 1. JSON-LD structured data (Schema.org Recipe) — used by sites wanting Google rich results
+    $('script[type="application/ld+json"]').each((_, el) => {
+      if (cookTime && servings) return;
+      try {
+        const json = JSON.parse($(el).html() || "");
+        const schemas = Array.isArray(json) ? json : [json];
+        for (const schema of schemas) {
+          const type = schema["@type"];
+          const isRecipe =
+            type === "Recipe" ||
+            (Array.isArray(type) && type.includes("Recipe"));
+          if (isRecipe) {
+            if (!cookTime) {
+              const rawTime = schema.totalTime || schema.cookTime;
+              if (rawTime) cookTime = parseIsoDuration(String(rawTime));
+            }
+            if (!servings && schema.recipeYield != null) {
+              const raw = Array.isArray(schema.recipeYield)
+                ? schema.recipeYield[0]
+                : schema.recipeYield;
+              servings = String(raw).trim() || null;
+            }
+            break;
+          }
+        }
+      } catch {
+        // invalid JSON, skip
+      }
+    });
+
+    // 2. Microdata (itemprop attributes)
+    if (!cookTime) {
+      const el = $('[itemprop="totalTime"]').first();
+      const dt = el.attr("datetime");
+      cookTime = dt ? parseIsoDuration(dt) : el.text().trim() || null;
+    }
+    if (!cookTime) {
+      const dt = $('[itemprop="cookTime"]').first().attr("datetime");
+      if (dt) cookTime = parseIsoDuration(dt);
+    }
+    if (!servings) {
+      const el = $('[itemprop="recipeYield"]').first();
+      servings = el.attr("content") || el.text().trim() || null;
+    }
+
+    // 3. WP Recipe Maker plugin
+    if (!cookTime) {
+      const val = $(".wprm-recipe-total-time").first().text().trim();
+      const unit = $(".wprm-recipe-total-time-unit").first().text().trim();
+      if (val) cookTime = unit ? `${val} ${unit}` : val;
+    }
+    if (!cookTime) {
+      const val = $(".wprm-recipe-cook-time").first().text().trim();
+      const unit = $(".wprm-recipe-cook-time-unit").first().text().trim();
+      if (val) cookTime = unit ? `${val} ${unit}` : val;
+    }
+    if (!servings) {
+      const val = $(".wprm-recipe-servings").first().text().trim();
+      const unit = $(".wprm-recipe-servings-unit").first().text().trim();
+      if (val) servings = unit ? `${val} ${unit}` : val;
+    }
+
+    // 4. Tasty Recipes plugin
+    if (!cookTime) {
+      cookTime = $(".tasty-recipes-total-time").first().text().trim() || null;
+    }
+    if (!servings) {
+      servings = $(".tasty-recipes-yield").first().text().trim() || null;
+    }
+
+    // 5. Regex-based fallback for common patterns in page source
+    if (!cookTime || !servings) {
+      const html = data;
+
+      // Cook time patterns: look for numbers followed by time units
+      // Matches: "30 minutes", "1.5 hours", "1 hr", "1 hour 30 minutes", etc.
+      if (!cookTime) {
+        const cookTimeMatch = html.match(
+          /(\d+(?:\.\d+)?)\s*(?:hours?|hrs?|minutes?|mins?)\s*(?:and\s*)?(?:(\d+)\s*(?:minutes?|mins?))?/i,
+        );
+        if (cookTimeMatch) {
+          let timeStr = cookTimeMatch[0].trim();
+          // Clean up extra text
+          timeStr = timeStr.replace(/[^0-9a-z\s]/gi, " ").trim();
+          // Limit length
+          if (timeStr && timeStr.length < 50) cookTime = timeStr;
+        }
+      }
+
+      // Servings patterns: look for "X servings", "Yields X", "Makes X", "4 servings", etc.
+      // Matches numbers that appear near serving/yield keywords
+      if (!servings) {
+        const servingsMatch = html.match(
+          /(?:serves?|servings?|yields?|makes?|prep\s+for)\s*(?:about\s+)?(\d+)(?:\s*-\s*(\d+))?\s*(?:servings?|people|persons)?/i,
+        );
+        if (servingsMatch) {
+          const num1 = servingsMatch[1];
+          const num2 = servingsMatch[2];
+          servings = num2 ? `${num1}-${num2}` : num1;
+        }
+      }
+    }
+
     return {
       title: title || "Untitled Recipe",
       thumbnailUrl: thumbnailUrl || null,
+      cookTime,
+      servings,
     };
   } catch (error) {
     console.error("Error fetching or parsing URL:", error);
@@ -239,6 +338,8 @@ async function extractOpenGraphMeta(url: string): Promise<RecipeMetadata> {
         return {
           title: "Untitled Recipe",
           thumbnailUrl: null,
+          cookTime: null,
+          servings: null,
         };
       }
     }

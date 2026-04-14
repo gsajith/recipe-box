@@ -319,6 +319,7 @@
 
 .viewToggleBtnActive:hover {
   background: var(--primary-dark);
+  color: white;
 }
 
 .loading {

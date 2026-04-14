@@ -1,9 +1,10 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
+import { Trash2, Clock, Users } from "lucide-react";
 import type { MouseEvent } from "react";
 import { RecipeWithTags } from "@/lib/types";
 import styles from "./RecipeList.module.css";
+import { isYouTubeUrl } from "@/lib/recipeExtractor";
 
 interface RecipeItemContentProps {
   recipe: RecipeWithTags;
@@ -24,25 +25,37 @@ export function RecipeItemContent({
     await onDelete(recipe.id);
   };
 
+  const getSourceBadge = () => {
+    try {
+      const url = new URL(recipe.url);
+      return isYouTubeUrl(url) ? "YouTube" : "Blog";
+    } catch {
+      return "Blog";
+    }
+  };
+
   return (
     <>
-      {recipe.thumbnail_url && (
-        viewMode === "list" ? (
+      {recipe.thumbnail_url &&
+        (viewMode === "list" ? (
           <div className={styles.thumbnailListWrapper}>
             <img
               src={recipe.thumbnail_url}
               alt={recipe.title}
               className={`${styles.thumbnail} ${styles.thumbnailList}`}
             />
+            <span className={styles.sourceBadge}>{getSourceBadge()}</span>
           </div>
         ) : (
-          <img
-            src={recipe.thumbnail_url}
-            alt={recipe.title}
-            className={styles.thumbnail}
-          />
-        )
-      )}
+          <div className={styles.thumbnailWrapper}>
+            <img
+              src={recipe.thumbnail_url}
+              alt={recipe.title}
+              className={styles.thumbnail}
+            />
+            <span className={styles.sourceBadge}>{getSourceBadge()}</span>
+          </div>
+        ))}
 
       <div
         className={`${styles.content} ${
@@ -54,6 +67,25 @@ export function RecipeItemContent({
           }`}>
           {recipe.title}
         </h3>
+        {(recipe.cook_time || recipe.servings) && (
+          <div className={styles.meta}>
+            {recipe.cook_time && (
+              <span className={styles.metaItem}>
+                <Clock size={11} />
+                {recipe.cook_time}
+              </span>
+            )}
+            {recipe.cook_time && recipe.servings && (
+              <span className={styles.metaDot}>·</span>
+            )}
+            {recipe.servings && (
+              <span className={styles.metaItem}>
+                <Users size={11} />
+                {recipe.servings}
+              </span>
+            )}
+          </div>
+        )}
         {recipe.tags && recipe.tags.length > 0 && (
           <div
             className={`${styles.tags} ${

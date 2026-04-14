@@ -15,7 +15,7 @@ export async function PUT(
 
     const { id } = await params;
     const body = await req.json();
-    const { title, tags, thumbnail_url } = body;
+    const { title, tags, thumbnail_url, cook_time, servings } = body;
 
     // Verify ownership
     const { data: recipe } = await supabase
@@ -33,6 +33,8 @@ export async function PUT(
     const updateData: any = { updated_at: new Date().toISOString() };
     if (title !== undefined) updateData.title = title;
     if (thumbnail_url !== undefined) updateData.thumbnail_url = thumbnail_url;
+    if (cook_time !== undefined) updateData.cook_time = cook_time;
+    if (servings !== undefined) updateData.servings = servings;
 
     // Update recipe
     const { error: updateError } = await supabase

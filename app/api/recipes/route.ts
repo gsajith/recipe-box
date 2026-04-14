@@ -18,12 +18,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Extract metadata from URL
-    const { title, thumbnailUrl } = await extractRecipeMetadata(url);
+    const { title, thumbnailUrl, cookTime, servings } = await extractRecipeMetadata(url);
 
-    // Use service role key and set user context
-    const supabaseWithUserContext = supabase.auth.admin || supabase;
-
-    // Save recipe to Supabase with user ID in headers
+    // Save recipe to Supabase
     const { data, error } = await supabase
       .from("recipes")
       .insert({
@@ -31,6 +28,8 @@ export async function POST(req: NextRequest) {
         url,
         title,
         thumbnail_url: thumbnailUrl,
+        cook_time: cookTime,
+        servings,
       })
       .select()
       .single();
