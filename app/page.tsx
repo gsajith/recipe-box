@@ -20,6 +20,7 @@ export default function Home() {
   const [isFetching, setIsFetching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [allTagsShown, setAllTagsShown] = useState(false);
 
   // Fetch recipes when user is loaded
@@ -249,6 +250,48 @@ export default function Home() {
         {recipes.length > 0 && (
           <div className={styles.searchBarContainer}>
             <SearchBar onSearch={handleSearch} />
+            <div className={styles.viewToggle}>
+              <button
+                onClick={() => setViewMode("grid")}
+                className={`${styles.viewToggleBtn} ${
+                  viewMode === "grid" ? styles.viewToggleBtnActive : ""
+                }`}
+                title="Grid view">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2">
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="14" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+              </button>
+              <button
+                onClick={() => setViewMode("list")}
+                className={`${styles.viewToggleBtn} ${
+                  viewMode === "list" ? styles.viewToggleBtnActive : ""
+                }`}
+                title="List view">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2">
+                  <line x1="8" y1="6" x2="21" y2="6"></line>
+                  <line x1="8" y1="12" x2="21" y2="12"></line>
+                  <line x1="8" y1="18" x2="21" y2="18"></line>
+                  <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                  <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                  <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                </svg>
+              </button>
+            </div>
             <RecipeForm onSubmit={handleAddRecipe} isLoading={isLoading} />
           </div>
         )}
@@ -289,6 +332,7 @@ export default function Home() {
             recipes={filteredRecipes}
             onRecipeSelect={setSelectedRecipe}
             onRecipeDelete={handleDeleteRecipe}
+            viewMode={viewMode}
           />
         )}
       </div>

@@ -65,7 +65,44 @@
 
 .searchBarContainer {
   display: flex;
+  align-items: center;
   gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.viewToggle {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.viewToggleBtn {
+  padding: 0.875rem 0.75rem;
+  background: var(--surface);
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.viewToggleBtn:hover {
+  background: var(--surface-variant);
+  color: var(--text-primary);
+}
+
+.viewToggleBtnActive {
+  background: var(--primary);
+  color: white;
+}
+
+.viewToggleBtnActive:hover {
+  background: #1d4ed8;
 }
 
 .signInButton:hover {
