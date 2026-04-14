@@ -13,7 +13,6 @@
   transition: all 0.2s ease;
   box-shadow: var(--shadow-sm);
   white-space: nowrap;
-  flex-shrink: 0;
 }
 
 .addButton:hover {
@@ -24,6 +23,13 @@
 
 .addButton:active {
   transform: translateY(0);
+}
+
+@media (max-width: 500px) {
+  .addButton {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 .modalOverlay {
