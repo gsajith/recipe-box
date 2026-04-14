@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { X, Edit2, Link as LinkIcon } from "lucide-react";
+import { X, Edit2, ExternalLink } from "lucide-react";
 import { RecipeWithTags } from "@/lib/types";
 import styles from "./RecipeDetail.module.css";
 
@@ -131,18 +131,20 @@ export function RecipeDetail({
               </div>
               <div className={styles.formGroup}>
                 <label className={styles.label}>Thumbnail URL</label>
-                <input
-                  type="text"
-                  value={thumbnailUrl}
-                  onChange={(e) => setThumbnailUrl(e.target.value)}
-                  className={styles.input}
-                  placeholder="Leave empty for no thumbnail"
-                />
-                {thumbnailUrl && (
-                  <div className={styles.thumbnailPreview}>
-                    <img src={thumbnailUrl} alt="Thumbnail preview" />
-                  </div>
-                )}
+                <div className={styles.thumbnailInputRow}>
+                  <input
+                    type="text"
+                    value={thumbnailUrl}
+                    onChange={(e) => setThumbnailUrl(e.target.value)}
+                    className={styles.input}
+                    placeholder="Leave empty for no thumbnail"
+                  />
+                  {thumbnailUrl && (
+                    <div className={styles.thumbnailPreview}>
+                      <img src={thumbnailUrl} alt="Thumbnail preview" />
+                    </div>
+                  )}
+                </div>
               </div>
               <div className={styles.buttonGroup}>
                 <button
@@ -170,49 +172,21 @@ export function RecipeDetail({
                   onClick={() => setIsEditingMetadata(true)}
                   className={styles.editBtn}
                   title="Edit title and thumbnail">
-                  <Edit2 size={20} />
+                  <Edit2 size={16} />
                 </button>
               </div>
+              <a
+                href={recipe.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.sourceLink}>
+                <ExternalLink size={12} />
+                {new URL(recipe.url).hostname.replace(/^www\./, "")}
+              </a>
             </>
           )}
-          <a
-            href={recipe.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.link}>
-            <LinkIcon size={16} />
-            <span>View Original Recipe</span>
-          </a>
 
           <div className={styles.tagsSection}>
-            <div className={styles.tagsInput}>
-              <input
-                ref={tagInputRef}
-                type="text"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Add a tag..."
-                className={styles.input}
-                disabled={isSaving}
-              />
-            </div>
-
-            <div className={styles.tagsList}>
-              {tags.map((tag) => (
-                <span key={tag} className={styles.tag}>
-                  {tag}
-                  <button
-                    onClick={() => handleRemoveTag(tag)}
-                    className={styles.removeTagBtn}
-                    title="Remove tag"
-                    disabled={isSaving}>
-                    <X size={14} />
-                  </button>
-                </span>
-              ))}
-            </div>
-
             <div className={styles.suggestionsSection}>
               <div className={styles.suggestionGroup}>
                 <p className={styles.suggestionLabel}>Meal Type</p>
@@ -247,6 +221,36 @@ export function RecipeDetail({
                   ))}
                 </div>
               </div>
+            </div>
+
+            <hr className={styles.divider} />
+
+            <div className={styles.tagsInput}>
+              <input
+                ref={tagInputRef}
+                type="text"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={handleKeyPress}
+                placeholder="Add a tag..."
+                className={styles.input}
+                disabled={isSaving}
+              />
+            </div>
+
+            <div className={styles.tagsList}>
+              {tags.map((tag) => (
+                <span key={tag} className={styles.tag}>
+                  {tag}
+                  <button
+                    onClick={() => handleRemoveTag(tag)}
+                    className={styles.removeTagBtn}
+                    title="Remove tag"
+                    disabled={isSaving}>
+                    <X size={14} />
+                  </button>
+                </span>
+              ))}
             </div>
           </div>
         </div>

@@ -20,58 +20,262 @@
   margin-bottom: 2.5rem;
 }
 
-.authContainer {
+/* ── Landing page ── */
+
+.landingPage {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.landingNav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.375rem 3rem;
+  background: var(--primary);
+  border-bottom: 1px solid rgba(250, 247, 239, 0.08);
+}
+
+.landingLogo {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #FAF7EF;
+  letter-spacing: -0.01em;
+}
+
+.navSignIn {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(250, 247, 239, 0.75);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.navSignIn:hover {
+  color: var(--accent);
+}
+
+.hero {
+  min-height: 100vh;
+  background: var(--primary);
+  background-image: radial-gradient(circle, rgba(250, 247, 239, 0.05) 1px, transparent 1px);
+  background-size: 28px 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
-  background: var(--primary);
+  padding: 8rem 2rem 5rem;
 }
 
-.authContent {
-  background: var(--surface);
-  max-width: 480px;
-  width: 100%;
-  margin: 2rem;
-  padding: 3rem 2.5rem;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
+.heroInner {
+  max-width: 680px;
+  text-align: center;
 }
 
-.authContent h1 {
-  font-size: 3rem;
-  font-weight: 800;
-  color: var(--primary);
-  line-height: 1.1;
-  margin-bottom: 1rem;
-}
-
-.authContent p {
-  font-size: 1rem;
-  margin: 0.5rem 0;
-  color: var(--text-secondary);
-  line-height: 1.6;
-}
-
-.signInButton {
+.heroBadge {
   display: inline-block;
-  margin-top: 2rem;
-  padding: 0.875rem 2.5rem;
-  background: var(--accent);
-  color: var(--primary);
+  background: rgba(245, 199, 58, 0.15);
+  color: var(--accent);
+  border: 1px solid rgba(245, 199, 58, 0.35);
+  padding: 0.375rem 1rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+}
+
+.heroTitle {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: clamp(3rem, 7vw, 5rem);
+  font-weight: 800;
+  color: #FAF7EF;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  margin-bottom: 1.75rem;
+}
+
+.heroTitle em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.heroSubtitle {
+  font-size: 1.05rem;
+  color: rgba(250, 247, 239, 0.65);
+  line-height: 1.75;
+  max-width: 480px;
+  margin: 0 auto 2.75rem;
+}
+
+.ctaButton {
+  display: inline-block;
+  padding: 1rem 2.25rem;
+  background: var(--orange);
+  color: white;
   text-decoration: none;
   border-radius: var(--radius-full);
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 0.95rem;
   transition: all 0.2s ease;
-  cursor: pointer;
+  box-shadow: 0 4px 24px rgba(200, 108, 68, 0.45);
+}
+
+.ctaButton:hover {
+  background: var(--orange-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(200, 108, 68, 0.55);
+}
+
+.featuresSection {
+  background: var(--background);
+  padding: 6rem 2rem;
+  border-top: 1.5px solid var(--border);
+}
+
+.featuresSectionInner {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.featuresSectionHeader {
+  text-align: center;
+  margin-bottom: 3.5rem;
+}
+
+.featuresEyebrow {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-bottom: 0.875rem;
+}
+
+.featuresSectionTitle {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: -0.02em;
+}
+
+.featuresGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+.featureCard {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s ease;
   box-shadow: var(--shadow-sm);
 }
 
-.signInButton:hover {
-  background: var(--accent-dark);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+.featureCard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--orange);
+}
+
+.featureIconWrap {
+  width: 44px;
+  height: 44px;
+  background: rgba(200, 108, 68, 0.1);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--orange);
+  margin-bottom: 1.5rem;
+}
+
+.featureNum {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.75rem;
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--orange);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.featureCard h3 {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 0.625rem;
+  line-height: 1.25;
+}
+
+.featureCard p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.75;
+}
+
+.landingCta {
+  background: var(--primary);
+  padding: 7rem 2rem;
+  text-align: center;
+}
+
+.landingCta h2 {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 800;
+  color: #FAF7EF;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.02em;
+}
+
+.landingCta p {
+  font-size: 1rem;
+  color: rgba(250, 247, 239, 0.6);
+  margin-bottom: 2.25rem;
+}
+
+@media (max-width: 768px) {
+  .landingNav {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .hero {
+    padding: 7rem 1.5rem 4rem;
+  }
+
+  .featuresSection {
+    padding: 4rem 1.5rem;
+  }
+
+  .featuresGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .featuresSectionTitle {
+    font-size: 1.75rem;
+  }
+
+  .landingCta {
+    padding: 5rem 1.5rem;
+  }
 }
 
 .searchBarContainer {
