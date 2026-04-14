@@ -23,6 +23,6 @@
   color: var(--primary);
 }
 
-.logo b:hover {
+.logo:hover b {
   color: var(--primary-dark);
 }

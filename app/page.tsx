@@ -27,10 +27,10 @@ export default function Home() {
 
   // Fetch recipes when user is loaded
   useEffect(() => {
-    if (isLoaded && user) {
+    if (user?.id) {
       fetchRecipes();
     }
-  }, [isLoaded, user]);
+  }, [isLoaded, user?.id]);
 
   // Re-filter when selected tags change
   useEffect(() => {
