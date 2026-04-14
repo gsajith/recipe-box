@@ -37,9 +37,7 @@ export function UserMenu() {
 
   if (!user) return null;
 
-  const displayName = username
-    ? username
-    : user.firstName || user.fullName || "Account";
+  const displayName = user.firstName || user.fullName || username || "Account";
   const profileHref = username ? `/user/${username}` : `/user/${user.id}`;
   const isOnProfile = username
     ? pathname === `/user/${username}`

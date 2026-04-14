@@ -16,7 +16,10 @@ export async function GET() {
     .single();
 
   if (error && error.code !== "PGRST116") {
-    return NextResponse.json({ error: "Failed to fetch profile" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch profile" },
+      { status: 500 },
+    );
   }
 
   return NextResponse.json(data ?? null);
@@ -29,7 +32,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { username, display_name } = body;
+  const { username } = body;
 
   if (username !== undefined) {
     if (!isValidUsername(username)) {
@@ -59,7 +62,6 @@ export async function POST(req: NextRequest) {
     updated_at: new Date().toISOString(),
   };
   if (username !== undefined) upsertData.username = username;
-  if (display_name !== undefined) upsertData.display_name = display_name;
 
   const { data, error } = await supabase
     .from("user_profiles")
@@ -75,7 +77,10 @@ export async function POST(req: NextRequest) {
       );
     }
     console.error("Supabase error:", error);
-    return NextResponse.json({ error: "Failed to save profile" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to save profile" },
+      { status: 500 },
+    );
   }
 
   return NextResponse.json(data);
