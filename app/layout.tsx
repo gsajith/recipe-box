@@ -16,7 +16,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Recipe Saver",
+  title: "Recipe Box",
   description: "Save and manage your favorite recipes",
 };
 
