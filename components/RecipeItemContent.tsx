@@ -36,26 +36,23 @@ export function RecipeItemContent({
 
   return (
     <>
-      {recipe.thumbnail_url &&
-        (viewMode === "list" ? (
-          <div className={styles.thumbnailListWrapper}>
-            <img
-              src={recipe.thumbnail_url}
-              alt={recipe.title}
-              className={`${styles.thumbnail} ${styles.thumbnailList}`}
-            />
+      {recipe.thumbnail_url && (
+        <div
+          className={
+            viewMode === "list"
+              ? styles.thumbnailListWrapper
+              : styles.thumbnailWrapper
+          }>
+          <img
+            src={recipe.thumbnail_url}
+            alt={recipe.title}
+            className={`${styles.thumbnail} ${styles.thumbnailList}`}
+          />
+          {viewMode !== "list" && (
             <span className={styles.sourceBadge}>{getSourceBadge()}</span>
-          </div>
-        ) : (
-          <div className={styles.thumbnailWrapper}>
-            <img
-              src={recipe.thumbnail_url}
-              alt={recipe.title}
-              className={styles.thumbnail}
-            />
-            <span className={styles.sourceBadge}>{getSourceBadge()}</span>
-          </div>
-        ))}
+          )}
+        </div>
+      )}
 
       <div
         className={`${styles.content} ${
@@ -66,6 +63,10 @@ export function RecipeItemContent({
             viewMode === "list" ? styles.titleList : ""
           }`}>
           {recipe.title}
+
+          {viewMode === "list" && (
+            <span className={styles.sourceBadgeList}>{getSourceBadge()}</span>
+          )}
         </h3>
         {(recipe.cook_time || recipe.servings) && (
           <div className={styles.meta}>

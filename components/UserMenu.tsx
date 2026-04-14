@@ -3,7 +3,7 @@
 import { useUser, useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
-import { User, Settings, LogOut, ChevronDown } from "lucide-react";
+import { User, Settings, LogOut, ChevronDown, Home } from "lucide-react";
 import Link from "next/link";
 import styles from "./UserMenu.module.css";
 
@@ -35,12 +35,8 @@ export function UserMenu() {
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         aria-haspopup="true">
-        <img
-          src={user.imageUrl}
-          alt={displayName}
-          className={styles.avatar}
-        />
-        <span className={styles.name}>{displayName}</span>
+        <img src={user.imageUrl} alt={displayName} className={styles.avatar} />
+        Hi,&nbsp;<span className={styles.name}>{displayName}</span>!
         <ChevronDown
           size={13}
           className={`${styles.chevron} ${open ? styles.chevronOpen : ""}`}
@@ -49,6 +45,13 @@ export function UserMenu() {
 
       {open && (
         <div className={styles.dropdown} role="menu">
+          <Link
+            href={`/`}
+            className={styles.item}
+            onClick={() => setOpen(false)}>
+            <Home size={15} />
+            Home
+          </Link>
           <Link
             href={`/user/${user.id}`}
             className={styles.item}

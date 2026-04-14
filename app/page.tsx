@@ -362,8 +362,15 @@ export default function Home() {
     <div className={styles.page}>
       <div className={styles.container}>
         <div className={styles.userHeader}>
+          <h3 className={styles.pageTitle}>
+            <em>
+              Recipe<b>Box</b>
+            </em>
+          </h3>
           <UserMenu />
         </div>
+        <hr />
+        <br />
 
         <div className={styles.searchBarContainer}>
           <SearchBar onSearch={handleSearch} />

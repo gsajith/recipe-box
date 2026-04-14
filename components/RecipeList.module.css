@@ -71,7 +71,19 @@
   position: absolute;
   top: 0.5rem;
   left: 0.5rem;
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--accent);
+  color: var(--primary);
+  border: 0.5px solid white;
+  padding: 0.175rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sourceBadgeList {
+  background: var(--accent);
   color: var(--primary);
   padding: 0.175rem 0.5rem;
   border-radius: 4px;
@@ -79,6 +91,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  font-family: var(--font-sans);
 }
 
 .thumbnailList {
@@ -131,6 +144,9 @@
   line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
 }
 
 .meta {
