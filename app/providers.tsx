@@ -5,9 +5,6 @@ interface ProvidersProps {
   children: ReactNode;
 }
 
-export async function Providers({ children }: ProvidersProps) {
-  return (
-    // @ts-ignore
-    <ClerkProvider>{children}</ClerkProvider>
-  );
+export function Providers({ children }: ProvidersProps) {
+  return <ClerkProvider>{children}</ClerkProvider>;
 }

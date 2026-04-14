@@ -28,7 +28,6 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${playfairDisplay.variable} ${dmSans.variable}`}>
       <body>
-        {/* @ts-ignore */}
         <Providers>{children}</Providers>
       </body>
     </html>
