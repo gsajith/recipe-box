@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { Archive, Tag, Search } from "lucide-react";
-import { UserButton, useUser } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import { RecipeForm } from "@/components/RecipeForm";
+import { UserMenu } from "@/components/UserMenu";
 import { RecipeList } from "@/components/RecipeList";
 import { RecipeDetail } from "@/components/RecipeDetail";
 import { SearchBar } from "@/components/SearchBar";
 import { RecipeWithTags } from "@/lib/types";
 import styles from "./page.module.css";
+import Link from "next/link";
 
 export default function Home() {
   const { user, isLoaded } = useUser();
@@ -360,7 +362,7 @@ export default function Home() {
     <div className={styles.page}>
       <div className={styles.container}>
         <div className={styles.userHeader}>
-          <UserButton />
+          <UserMenu />
         </div>
 
         <div className={styles.searchBarContainer}>
