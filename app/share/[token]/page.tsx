@@ -117,7 +117,9 @@ export default async function SharePage({
 
   return (
     <div className={styles.page}>
-      <AppHeader />
+      <div className={styles.container}>
+        <AppHeader />
+      </div>
 
       <main className={styles.main}>
         <p className={styles.attribution}>
