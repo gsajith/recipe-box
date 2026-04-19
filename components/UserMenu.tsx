@@ -8,7 +8,7 @@ import Link from "next/link";
 import styles from "./UserMenu.module.css";
 
 export function UserMenu() {
-  const { user, isLoaded } = useUser();
+  const { user } = useUser();
   const { signOut } = useClerk();
   const router = useRouter();
   const pathname = usePathname();
@@ -36,7 +36,6 @@ export function UserMenu() {
   }, []);
 
   if (!user) {
-    if (!isLoaded) return null;
     return <a href="/sign-in" className={styles.signInLink}>Sign in</a>;
   }
 

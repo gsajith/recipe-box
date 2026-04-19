@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
+import Link from "next/link";
+
 import { Clock, Users, ExternalLink } from "lucide-react";
 import { supabaseServer as supabase } from "@/lib/supabase";
 import { AppHeader } from "@/components/AppHeader";
@@ -106,10 +107,7 @@ export default async function SharePage({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
-  const [recipe, { userId }] = await Promise.all([
-    getSharedRecipe(token),
-    auth(),
-  ]);
+  const recipe = await getSharedRecipe(token);
 
   if (!recipe) notFound();
 
@@ -126,13 +124,13 @@ export default async function SharePage({
 
       <main className={styles.main}>
         <p className={styles.attribution}>
-          <a
+          <Link
             href={`/user/${recipe.sharer_username ?? recipe.sharer_user_id}`}
             className={styles.sharerLink}>
             {recipe.sharer_username
               ? `@${recipe.sharer_username}`
               : "A RecipeBox user"}
-          </a>
+          </Link>
           {" shared a recipe with you"}
         </p>
 
@@ -187,7 +185,7 @@ export default async function SharePage({
           </div>
         </div>
 
-        <SaveButton token={token} isSignedIn={!!userId} />
+        <SaveButton token={token} />
       </main>
     </div>
   );

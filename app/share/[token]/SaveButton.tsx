@@ -2,20 +2,21 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import styles from "./page.module.css";
 
 interface SaveButtonProps {
   token: string;
-  isSignedIn: boolean;
 }
 
-export function SaveButton({ token, isSignedIn }: SaveButtonProps) {
+export function SaveButton({ token }: SaveButtonProps) {
   const router = useRouter();
+  const { user } = useUser();
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error" | "duplicate">("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
   const handleSave = async () => {
-    if (!isSignedIn) {
+    if (!user) {
       router.push(`/sign-in?redirect_url=/share/${token}`);
       return;
     }
@@ -66,7 +67,7 @@ export function SaveButton({ token, isSignedIn }: SaveButtonProps) {
         disabled={status === "saving"}>
         {status === "saving"
           ? "Saving…"
-          : isSignedIn
+          : user
           ? "Save to my recipes"
           : "Sign in to save"}
       </button>
