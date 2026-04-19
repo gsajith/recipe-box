@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { Clock, Users, ExternalLink } from "lucide-react";
 import { supabaseServer as supabase } from "@/lib/supabase";
+import { AppHeader } from "@/components/AppHeader";
 import { SaveButton } from "./SaveButton";
 import styles from "./page.module.css";
 
@@ -116,9 +117,7 @@ export default async function SharePage({
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <a href="/" className={styles.logo}>Recipe Box</a>
-      </header>
+      <AppHeader />
 
       <main className={styles.main}>
         <p className={styles.attribution}>
