@@ -1,7 +1,16 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { X, ArrowLeft, Edit2, ExternalLink, Clock, Users, Share2, Check } from "lucide-react";
+import {
+  X,
+  ArrowLeft,
+  Edit2,
+  ExternalLink,
+  Clock,
+  Users,
+  Share,
+  Check,
+} from "lucide-react";
 import { RecipeWithTags } from "@/lib/types";
 import styles from "./RecipeDetail.module.css";
 
@@ -137,7 +146,9 @@ export function RecipeDetail({
   };
 
   const handleShare = async () => {
-    const res = await fetch(`/api/recipes/${recipe.id}/share`, { method: "POST" });
+    const res = await fetch(`/api/recipes/${recipe.id}/share`, {
+      method: "POST",
+    });
     if (!res.ok) return;
     const { shareToken } = await res.json();
     const url = `${window.location.origin}/share/${shareToken}`;
@@ -161,7 +172,7 @@ export function RecipeDetail({
             className={`${styles.shareBtn} ${shareCopied ? styles.shareBtnCopied : ""}`}
             onClick={handleShare}
             title={shareCopied ? "Link copied!" : "Share recipe"}>
-            {shareCopied ? <Check size={16} /> : <Share2 size={16} />}
+            {shareCopied ? <Check size={16} /> : <Share size={16} />}
           </button>
           <button className={styles.closeBtn} onClick={onClose} title="Close">
             <X size={20} />

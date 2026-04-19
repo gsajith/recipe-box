@@ -35,10 +35,7 @@ async function getSharedRecipe(token: string): Promise<SharedRecipe | null> {
       .select("username")
       .eq("clerk_user_id", recipe.user_id)
       .single(),
-    supabase
-      .from("recipe_tags")
-      .select("tag")
-      .eq("recipe_id", recipe.id),
+    supabase.from("recipe_tags").select("tag").eq("recipe_id", recipe.id),
   ]);
 
   return {
@@ -178,7 +175,9 @@ export default async function SharePage({
             {recipe.tags.length > 0 && (
               <div className={styles.tags}>
                 {recipe.tags.map((tag) => (
-                  <span key={tag} className={styles.tag}>{tag}</span>
+                  <span key={tag} className={styles.tag}>
+                    {tag}
+                  </span>
                 ))}
               </div>
             )}
