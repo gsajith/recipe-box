@@ -182,6 +182,7 @@ export default function Home() {
     thumbnailUrl: string | null,
     cookTime: string | null,
     servings: string | null,
+    notes: string | null,
   ) => {
     try {
       const response = await fetch(`/api/recipes/${recipeId}`, {
@@ -192,6 +193,7 @@ export default function Home() {
           thumbnail_url: thumbnailUrl,
           cook_time: cookTime,
           servings,
+          notes,
         }),
       });
 
@@ -212,27 +214,6 @@ export default function Home() {
       });
     } catch (error) {
       console.error("Error updating recipe:", error);
-      throw error;
-    }
-  };
-
-  const handleUpdateNotes = async (recipeId: string, notes: string) => {
-    try {
-      const response = await fetch(`/api/recipes/${recipeId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ notes }),
-      });
-      if (!response.ok) throw new Error("Failed to update notes");
-      const updatedRecipe = await response.json();
-      setSelectedRecipe(updatedRecipe);
-      setRecipes((prev) => {
-        const updated = prev.map((r) => (r.id === recipeId ? updatedRecipe : r));
-        filterRecipes(updated, searchQuery);
-        return updated;
-      });
-    } catch (error) {
-      console.error("Error updating notes:", error);
       throw error;
     }
   };
@@ -419,7 +400,6 @@ export default function Home() {
           recipe={selectedRecipe}
           onTagsUpdate={handleUpdateTags}
           onMetadataUpdate={handleUpdateMetadata}
-          onNotesUpdate={handleUpdateNotes}
           onClose={() => setSelectedRecipe(null)}
         />
       )}
