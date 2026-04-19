@@ -25,29 +25,87 @@
   border: 1.5px solid var(--border);
 }
 
-.closeBtn {
+.topRight {
   position: absolute;
   top: 1rem;
   right: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  z-index: 10;
+}
+
+.closeBtn {
   background: var(--primary);
   color: white;
   border: none;
   border-radius: 50%;
   width: 38px;
   height: 38px;
-  font-size: 1.25rem;
   cursor: pointer;
-  z-index: 10;
   transition: all 0.2s ease;
   box-shadow: var(--shadow-md);
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .closeBtn:hover {
   background: var(--primary-dark);
   transform: scale(1.1);
+}
+
+.shareBtn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.shareBtn:hover {
+  background: var(--primary-dark);
+  transform: scale(1.1);
+}
+
+.shareBtnCopied {
+  background: var(--orange);
+}
+
+.shareBtnCopied:hover {
+  background: var(--orange-dark) !important;
+}
+
+.copiedLabel {
+  background: var(--primary);
+  color: white;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  box-shadow: var(--shadow-md);
+  animation: labelPop 0.15s ease forwards;
+  align-self: center;
+}
+
+@keyframes labelPop {
+  from {
+    opacity: 0;
+    transform: translateX(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .backBtn {
@@ -266,6 +324,7 @@
   color: var(--text-primary);
 }
 
+
 .editSection {
   margin-bottom: 1.5rem;
   background: var(--surface-variant);
@@ -429,6 +488,28 @@
 
   .closeBtn {
     display: none;
+  }
+
+  .copiedLabel {
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+
+  .shareBtn {
+    background: rgba(0, 0, 0, 0.72);
+    box-shadow: none;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+
+  .shareBtn:hover {
+    background: rgba(0, 0, 0, 0.85);
+    transform: none;
+  }
+
+  .shareBtnCopied {
+    background: rgba(200, 108, 68, 0.9);
   }
 
   .backBtn {

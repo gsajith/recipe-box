@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { X, ArrowLeft, Edit2, ExternalLink, Clock, Users } from "lucide-react";
+import { X, ArrowLeft, Edit2, ExternalLink, Clock, Users, Share2, Check } from "lucide-react";
 import { RecipeWithTags } from "@/lib/types";
 import styles from "./RecipeDetail.module.css";
 
@@ -37,6 +37,7 @@ export function RecipeDetail({
   const [notes, setNotes] = useState(recipe.notes || "");
   const [isEditingMetadata, setIsEditingMetadata] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
 
   // Sync all state when recipe changes
   useEffect(() => {
@@ -135,16 +136,37 @@ export function RecipeDetail({
     }
   };
 
+  const handleShare = async () => {
+    const res = await fetch(`/api/recipes/${recipe.id}/share`, { method: "POST" });
+    if (!res.ok) return;
+    const { shareToken } = await res.json();
+    const url = `${window.location.origin}/share/${shareToken}`;
+    await navigator.clipboard.writeText(url);
+    setShareCopied(true);
+    setTimeout(() => setShareCopied(false), 2500);
+  };
+
   const displayCookTime = cookTime || "";
   const displayServings = servings || "";
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        {/* Desktop close button */}
-        <button className={styles.closeBtn} onClick={onClose} title="Close">
-          <X size={20} />
-        </button>
+        {/* Top-right: share + close */}
+        <div className={styles.topRight}>
+          {shareCopied && (
+            <span className={styles.copiedLabel}>Link copied!</span>
+          )}
+          <button
+            className={`${styles.shareBtn} ${shareCopied ? styles.shareBtnCopied : ""}`}
+            onClick={handleShare}
+            title={shareCopied ? "Link copied!" : "Share recipe"}>
+            {shareCopied ? <Check size={16} /> : <Share2 size={16} />}
+          </button>
+          <button className={styles.closeBtn} onClick={onClose} title="Close">
+            <X size={20} />
+          </button>
+        </div>
         {/* Mobile back button */}
         <button className={styles.backBtn} onClick={onClose}>
           <ArrowLeft size={17} />
@@ -261,7 +283,7 @@ export function RecipeDetail({
                 <button
                   onClick={() => setIsEditingMetadata(true)}
                   className={styles.editBtn}
-                  title="Edit title and thumbnail">
+                  title="Edit recipe">
                   <Edit2 size={16} />
                 </button>
               </div>

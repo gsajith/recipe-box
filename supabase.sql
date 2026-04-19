@@ -24,6 +24,9 @@ CREATE TABLE recipe_tags (
 -- Migration: add notes field
 -- ALTER TABLE recipes ADD COLUMN notes TEXT;
 
+-- Migration: add share token
+-- ALTER TABLE recipes ADD COLUMN share_token TEXT UNIQUE;
+
 -- Create indexes for better query performance
 CREATE INDEX idx_recipes_user_id ON recipes(user_id);
 CREATE INDEX idx_recipe_tags_recipe_id ON recipe_tags(recipe_id);
