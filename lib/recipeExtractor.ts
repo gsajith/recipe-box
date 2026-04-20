@@ -1,3 +1,4 @@
+import Anthropic from "@anthropic-ai/sdk";
 import axios from "axios";
 import * as cheerio from "cheerio";
 
@@ -143,57 +144,119 @@ function instagramTitle(url: URL): string {
 }
 
 async function extractInstagramMeta(url: URL): Promise<RecipeMetadata> {
-  const title = instagramTitle(url);
+  const fallbackTitle = instagramTitle(url);
 
-  // Try the /embed/ endpoint — Instagram serves it without login and it
-  // contains og:image / a <video poster> we can use as the thumbnail.
-  const embedUrl = `${url.origin}${url.pathname.replace(/\/?$/, "/embed/")}`;
-
+  // Instagram serves full server-rendered HTML (og tags + JSON data) to crawlers.
   const headers = {
     "User-Agent":
-      "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+      "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
     Accept:
-      "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+      "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.9",
     "Accept-Encoding": "gzip, deflate, br",
     Connection: "keep-alive",
-    "Upgrade-Insecure-Requests": "1",
   };
 
   let thumbnailUrl: string | null = null;
+  let caption: string | null = null;
 
-  // 1. Try the embed page
   try {
-    const { data } = await axios.get(embedUrl, { headers, timeout: 15000 });
+    const { data } = await axios.get(url.href, {
+      headers,
+      timeout: 15000,
+      maxRedirects: 5,
+    });
     const $ = cheerio.load(data);
+
+    // Prefer image_versions2 candidates over og:image — the og:image has a
+    // composite play-button overlay (stp=cmp1_...) while image_versions2 urls
+    // use stp=dst-jpg_e15_tt6 which is the clean still frame at full resolution.
+    const cleanThumb = extractInstagramCleanThumbnail(data);
     thumbnailUrl =
+      cleanThumb ||
       $('meta[property="og:image"]').attr("content") ||
-      $("video").attr("poster") ||
-      $("img").first().attr("src") ||
+      $('meta[name="twitter:image"]').attr("content") ||
       null;
+
+    // og:title format: 'Username on Instagram: "full caption text"'
+    // Strip the prefix to get just the caption.
+    const ogTitle = $('meta[property="og:title"]').attr("content") || "";
+    const captionMatch = ogTitle.match(/on Instagram:\s*"?([\s\S]+)"?\s*$/i);
+    caption = captionMatch ? captionMatch[1].trim() : null;
   } catch {
-    // embed fetch failed, fall through
+    // fetch failed — proceed with null thumbnail and fallback title
   }
 
-  // 2. Try the canonical URL directly
-  if (!thumbnailUrl) {
-    try {
-      const { data } = await axios.get(url.href, {
-        headers,
-        timeout: 15000,
-        maxRedirects: 5,
-      });
-      const $ = cheerio.load(data);
-      thumbnailUrl =
-        $('meta[property="og:image"]').attr("content") ||
-        $('meta[name="twitter:image"]').attr("content") ||
-        null;
-    } catch {
-      // direct fetch also failed — we'll proceed with null thumbnail
+  const extracted = await extractMetaFromCaption(caption, fallbackTitle);
+  return { ...extracted, thumbnailUrl };
+}
+
+/**
+ * Pull the highest-resolution clean thumbnail out of the page's embedded
+ * image_versions2 JSON. These URLs have no composite play-button overlay
+ * (they use stp=dst-jpg_e15 rather than stp=cmp1_dst-jpg_e35).
+ */
+function extractInstagramCleanThumbnail(html: string): string | null {
+  const idx = html.indexOf("image_versions2");
+  if (idx === -1) return null;
+  // URLs inside JSON blocks use escaped slashes (\/) — normalize to / first
+  const chunk = html.slice(idx, idx + 3000).replace(/\\\//g, "/");
+  // Match the first https CDN jpg URL in the candidates array
+  const m = chunk.match(/https:\/\/scontent[^"]+\.jpg[^"]*/);
+  if (!m) return null;
+  // The URL may contain HTML entities (& → &amp;) — unescape them
+  return m[0].replace(/&amp;/g, "&");
+}
+
+/**
+ * Use Claude Haiku to extract the recipe name, cook time, and servings from
+ * an Instagram caption. Falls back gracefully if the key isn't set or the
+ * call fails.
+ */
+async function extractMetaFromCaption(
+  caption: string | null,
+  fallbackTitle: string,
+): Promise<Omit<RecipeMetadata, "thumbnailUrl">> {
+  if (!caption || !process.env.ANTHROPIC_API_KEY) {
+    return { title: fallbackTitle, cookTime: null, servings: null };
+  }
+
+  try {
+    const client = new Anthropic();
+    const response = await client.messages.create({
+      model: "claude-haiku-4-5",
+      max_tokens: 128,
+      messages: [
+        {
+          role: "user",
+          content: `Extract recipe information from this Instagram caption and return it as JSON with exactly these keys:
+- "title": the recipe name (string, or "Instagram Recipe" if not found)
+- "cookTime": total cook/prep time as a short string like "30 min" or "1 hr 15 min" (null if not mentioned)
+- "servings": serving count as a short string like "4" or "serves 4-6" (null if not mentioned)
+
+Return only valid JSON, no explanation.
+
+Caption:
+${caption}`,
+        },
+      ],
+    });
+
+    const block = response.content[0];
+    if (block.type === "text") {
+      const raw = block.text.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+      const parsed = JSON.parse(raw);
+      return {
+        title: parsed.title || fallbackTitle,
+        cookTime: parsed.cookTime || null,
+        servings: parsed.servings || null,
+      };
     }
+  } catch (error) {
+    console.error("Error calling Claude for caption extraction:", error);
   }
 
-  return { title, thumbnailUrl, cookTime: null, servings: null };
+  return { title: fallbackTitle, cookTime: null, servings: null };
 }
 
 /** Convert ISO 8601 duration (e.g. "PT1H30M") to human-readable "1 hr 30 min" */
