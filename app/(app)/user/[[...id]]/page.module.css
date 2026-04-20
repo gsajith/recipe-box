@@ -110,6 +110,21 @@
 
 .followWrap {
   margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+}
+
+.followsYouBadge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--surface-variant);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 0.2rem 0.6rem;
+  letter-spacing: 0.01em;
 }
 
 /* ─── Bottom row: badge + recipe fan ─────────────────────────────────────── */
@@ -198,6 +213,15 @@
   color: white;
 }
 
+.mobileFollowWrap {
+  display: none;
+  align-items: center;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+  padding: 0 1rem;
+}
+
 @media (max-width: 700px) {
   .profileCard {
     display: flex;
@@ -261,5 +285,14 @@
 
   .recipesBadge {
     text-align: center;
+  }
+
+  .followWrap {
+    display: none;
+  }
+
+  .mobileFollowWrap {
+    display: flex;
+    justify-content: center;
   }
 }

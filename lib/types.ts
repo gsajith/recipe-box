@@ -15,6 +15,10 @@ export interface RecipeWithTags extends Recipe {
   tags: string[];
 }
 
+export interface FeedRecipe extends RecipeWithTags {
+  attribution_username: string | null;
+}
+
 export interface UserProfile {
   id: string;
   clerk_user_id: string;

@@ -27,14 +27,22 @@ export async function GET(
     return NextResponse.json({ isFollowing: false });
   }
 
-  const { data } = await supabase
-    .from("follows")
-    .select("id")
-    .eq("follower_id", userId)
-    .eq("following_id", targetId)
-    .maybeSingle();
+  const [{ data: forward }, { data: reverse }] = await Promise.all([
+    supabase
+      .from("follows")
+      .select("id")
+      .eq("follower_id", userId)
+      .eq("following_id", targetId)
+      .maybeSingle(),
+    supabase
+      .from("follows")
+      .select("id")
+      .eq("follower_id", targetId)
+      .eq("following_id", userId)
+      .maybeSingle(),
+  ]);
 
-  return NextResponse.json({ isFollowing: !!data });
+  return NextResponse.json({ isFollowing: !!forward, followsMe: !!reverse });
 }
 
 export async function POST(

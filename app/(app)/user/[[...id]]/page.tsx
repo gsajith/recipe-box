@@ -13,6 +13,8 @@ interface ProfileData {
   clerk_user_id: string;
   follower_count: number;
   following_count: number;
+  image_url: string | null;
+  display_name: string | null;
 }
 
 const MAX_FAN = 5;
@@ -26,6 +28,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [recipes, setRecipes] = useState<RecipeWithTags[]>([]);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [followsMe, setFollowsMe] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -65,8 +68,9 @@ export default function ProfilePage() {
         if (Array.isArray(recipesData))
           setRecipes(recipesData as RecipeWithTags[]);
         if (followData) {
-          const f = followData as { isFollowing?: boolean };
+          const f = followData as { isFollowing?: boolean; followsMe?: boolean };
           setIsFollowing(!!f.isFollowing);
+          setFollowsMe(!!f.followsMe);
         }
       })
       .catch(() => {})
@@ -81,8 +85,9 @@ export default function ProfilePage() {
   const displayName =
     isOwnProfile && user
       ? user.fullName || user.firstName || myUsername || ""
-      : displayUsername || "";
-  const avatarUrl = isOwnProfile && user ? user.imageUrl : null;
+      : profile?.display_name || displayUsername || "";
+  const avatarUrl =
+    isOwnProfile && user ? user.imageUrl : (profile?.image_url ?? null);
 
   const followerCount = profile?.follower_count ?? 0;
   const followingCount = profile?.following_count ?? 0;
@@ -123,6 +128,9 @@ export default function ProfilePage() {
                   username={displayUsername!}
                   initialIsFollowing={isFollowing}
                 />
+                {followsMe && (
+                  <span className={styles.followsYouBadge}>Follows you</span>
+                )}
               </div>
             )}
           </div>
@@ -187,6 +195,9 @@ export default function ProfilePage() {
             username={displayUsername!}
             initialIsFollowing={isFollowing}
           />
+          {followsMe && (
+            <span className={styles.followsYouBadge}>Follows you</span>
+          )}
         </div>
       )}
     </div>

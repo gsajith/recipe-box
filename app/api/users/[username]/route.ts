@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { clerkClient } from "@clerk/nextjs/server";
 import { supabaseServer as supabase } from "@/lib/supabase";
 
 export async function GET(
@@ -26,7 +27,7 @@ export async function GET(
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  const [{ count: followerCount }, { count: followingCount }] =
+  const [{ count: followerCount }, { count: followingCount }, clerkUser] =
     await Promise.all([
       supabase
         .from("follows")
@@ -36,11 +37,17 @@ export async function GET(
         .from("follows")
         .select("*", { count: "exact", head: true })
         .eq("follower_id", profile.clerk_user_id),
+      (await clerkClient())
+        .users.getUser(profile.clerk_user_id)
+        .catch(() => null),
     ]);
 
   return NextResponse.json({
     ...profile,
     follower_count: followerCount ?? 0,
     following_count: followingCount ?? 0,
+    image_url: clerkUser?.imageUrl ?? null,
+    display_name:
+      clerkUser?.fullName || clerkUser?.firstName || profile.username || null,
   });
 }
