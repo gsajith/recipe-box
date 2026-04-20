@@ -85,7 +85,7 @@ export async function generateMetadata({
       url: `/share/${token}`,
       siteName: "RecipeBox",
       images: recipe.thumbnail_url
-        ? [{ url: recipe.thumbnail_url, alt: recipe.title }]
+        ? [{ url: recipe.thumbnail_url, alt: recipe.title, width: 1200, height: 630 }]
         : [],
       type: "website",
     },
