@@ -1,21 +1,61 @@
 import type { Metadata } from "next";
+import { clerkClient } from "@clerk/nextjs/server";
 import { supabaseServer as supabase } from "@/lib/supabase";
 
 async function getProfileMeta(username: string) {
-  const { data: profile } = await supabase
-    .from("user_profiles")
-    .select("clerk_user_id, display_name, image_url, follower_count, following_count")
-    .eq("username", username)
-    .single();
+  try {
+    const { data: profile, error: profileError } = await supabase
+      .from("user_profiles")
+      .select("clerk_user_id, username")
+      .eq("username", username)
+      .single();
 
-  if (!profile) return null;
+    if (profileError || !profile) return null;
 
-  const { count } = await supabase
-    .from("recipes")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", profile.clerk_user_id);
+    const [followerResult, followingResult, recipeResult, clerkResult] =
+      await Promise.allSettled([
+        supabase
+          .from("follows")
+          .select("*", { count: "exact", head: true })
+          .eq("following_id", profile.clerk_user_id),
+        supabase
+          .from("follows")
+          .select("*", { count: "exact", head: true })
+          .eq("follower_id", profile.clerk_user_id),
+        supabase
+          .from("recipes")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", profile.clerk_user_id),
+        clerkClient()
+          .then((c) => c.users.getUser(profile.clerk_user_id))
+          .catch(() => null),
+      ]);
 
-  return { ...profile, recipeCount: count ?? 0 };
+    const followerCount =
+      followerResult.status === "fulfilled"
+        ? (followerResult.value.count ?? 0)
+        : 0;
+    const followingCount =
+      followingResult.status === "fulfilled"
+        ? (followingResult.value.count ?? 0)
+        : 0;
+    const recipeCount =
+      recipeResult.status === "fulfilled" ? (recipeResult.value.count ?? 0) : 0;
+    const clerkUser =
+      clerkResult.status === "fulfilled" ? clerkResult.value : null;
+
+    return {
+      username: profile.username,
+      display_name:
+        clerkUser?.fullName || clerkUser?.firstName || profile.username,
+      image_url: clerkUser?.imageUrl ?? null,
+      follower_count: followerCount,
+      following_count: followingCount,
+      recipe_count: recipeCount,
+    };
+  } catch {
+    return null;
+  }
 }
 
 export async function generateMetadata({
@@ -26,24 +66,39 @@ export async function generateMetadata({
   const { id } = await params;
   const username = id?.[0];
 
+  const suffix = "— a RecipeBox user";
+
   if (!username) {
-    return { title: "My Profile — RecipeBox" };
+    return { title: `My Profile ${suffix}` };
   }
 
   const profile = await getProfileMeta(username);
 
   if (!profile) {
-    return { title: `@${username} — RecipeBox` };
+    return {
+      title: `@${username} ${suffix}`,
+      openGraph: {
+        title: `@${username} ${suffix}`,
+        siteName: "RecipeBox",
+        url: `/user/${username}`,
+        type: "profile",
+      },
+      twitter: {
+        card: "summary",
+        title: `@${username} ${suffix}`,
+      },
+    };
   }
 
   const displayName = profile.display_name || username;
-  const description = `${profile.recipeCount} recipe${profile.recipeCount !== 1 ? "s" : ""} saved · ${profile.follower_count} follower${profile.follower_count !== 1 ? "s" : ""} · ${profile.following_count} following`;
+  const title = `${displayName} (@${username}) ${suffix}`;
+  const description = `${profile.recipe_count} recipe${profile.recipe_count !== 1 ? "s" : ""} saved · ${profile.follower_count} follower${profile.follower_count !== 1 ? "s" : ""} · ${profile.following_count} following`;
 
   return {
-    title: `${displayName} (@${username}) — RecipeBox`,
+    title,
     description,
     openGraph: {
-      title: `${displayName} (@${username})`,
+      title,
       description,
       url: `/user/${username}`,
       siteName: "RecipeBox",
@@ -53,8 +108,8 @@ export async function generateMetadata({
       type: "profile",
     },
     twitter: {
-      card: profile.image_url ? "summary" : "summary",
-      title: `${displayName} (@${username})`,
+      card: "summary",
+      title,
       description,
       images: profile.image_url ? [profile.image_url] : [],
     },
