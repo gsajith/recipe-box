@@ -198,7 +198,7 @@ export function NotificationPanel() {
                                 }}>
                                 {loadingFollow === item.actor_username
                                   ? "…"
-                                  : "Follow"}
+                                  : "Follow back"}
                               </button>
                             )}
                           </div>
