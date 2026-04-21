@@ -1,0 +1,80 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: var(--background);
+  border-radius: var(--radius);
+  overflow: hidden;
+  width: min(480px, 95vw);
+  display: flex;
+  flex-direction: column;
+}
+
+.cropArea {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  background: #000;
+}
+
+.controls {
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.zoomSlider {
+  width: 100%;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.buttons {
+  display: flex;
+  gap: 0.625rem;
+  justify-content: flex-end;
+}
+
+.cancelBtn {
+  padding: 0.5rem 1rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.9375rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.cancelBtn:hover {
+  background: var(--surface);
+}
+
+.applyBtn {
+  padding: 0.5rem 1.25rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.applyBtn:hover:not(:disabled) {
+  background: var(--primary-dark);
+}
+
+.applyBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

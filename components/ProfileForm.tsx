@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useUser } from "@clerk/nextjs";
 import { Camera } from "lucide-react";
+import { CropModal } from "./CropModal";
 import styles from "./ProfileForm.module.css";
 
 type CheckState = "idle" | "checking" | "available" | "unavailable" | "invalid";
@@ -48,15 +49,22 @@ export function ProfileForm({
   const [saving, setSaving] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const checkController = useRef<AbortController | null>(null);
 
-  // Clean up object URL when component unmounts or preview changes
+  // Clean up object URLs on unmount or when they change
   useEffect(() => {
     return () => {
       if (photoPreview) URL.revokeObjectURL(photoPreview);
     };
   }, [photoPreview]);
+
+  useEffect(() => {
+    return () => {
+      if (cropSrc) URL.revokeObjectURL(cropSrc);
+    };
+  }, [cropSrc]);
 
   // Sync state when parent provides initial values after an async load
   useEffect(() => {
@@ -109,9 +117,23 @@ export function ProfileForm({
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    // Reset input so the same file can be re-selected after cancelling
+    e.target.value = "";
+    if (cropSrc) URL.revokeObjectURL(cropSrc);
+    setCropSrc(URL.createObjectURL(file));
+  };
+
+  const handleCropConfirm = (croppedFile: File) => {
     if (photoPreview) URL.revokeObjectURL(photoPreview);
-    setPhotoFile(file);
-    setPhotoPreview(URL.createObjectURL(file));
+    setPhotoFile(croppedFile);
+    setPhotoPreview(URL.createObjectURL(croppedFile));
+    if (cropSrc) URL.revokeObjectURL(cropSrc);
+    setCropSrc(null);
+  };
+
+  const handleCropCancel = () => {
+    if (cropSrc) URL.revokeObjectURL(cropSrc);
+    setCropSrc(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -183,6 +205,14 @@ export function ProfileForm({
   const avatarInitial = (displayName || username || "?")[0].toUpperCase();
 
   return (
+    <>
+    {cropSrc && (
+      <CropModal
+        imageSrc={cropSrc}
+        onConfirm={handleCropConfirm}
+        onCancel={handleCropCancel}
+      />
+    )}
     <form className={className} onSubmit={handleSubmit}>
       <div className={styles.avatarSection}>
         <button
@@ -258,5 +288,6 @@ export function ProfileForm({
 
       {footer}
     </form>
+    </>
   );
 }
