@@ -457,6 +457,7 @@ export default function Home() {
           recipe={selectedRecipe}
           onTagsUpdate={handleUpdateTags}
           onMetadataUpdate={handleUpdateMetadata}
+          onDelete={handleDeleteRecipe}
           onClose={() => setSelectedRecipe(null)}
         />
       )}

@@ -10,6 +10,7 @@ import {
   Users,
   Share,
   Check,
+  Trash2,
 } from "lucide-react";
 import { RecipeWithTags } from "@/lib/types";
 import styles from "./RecipeDetail.module.css";
@@ -26,6 +27,7 @@ interface RecipeDetailProps {
     servings: string | null,
     notes: string | null,
   ) => Promise<void>;
+  onDelete?: (recipeId: string) => Promise<void>;
   onClose: () => void;
 }
 
@@ -33,6 +35,7 @@ export function RecipeDetail({
   recipe,
   onTagsUpdate,
   onMetadataUpdate,
+  onDelete,
   onClose,
 }: RecipeDetailProps) {
   const tagInputRef = useRef<HTMLInputElement>(null);
@@ -47,6 +50,18 @@ export function RecipeDetail({
   const [isEditingMetadata, setIsEditingMetadata] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const deleteTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleDelete = () => {
+    if (!confirmingDelete) {
+      setConfirmingDelete(true);
+      deleteTimeoutRef.current = setTimeout(() => setConfirmingDelete(false), 3000);
+    } else {
+      if (deleteTimeoutRef.current) clearTimeout(deleteTimeoutRef.current);
+      onDelete?.(recipe.id);
+    }
+  };
 
   // Sync all state when recipe changes
   useEffect(() => {
@@ -155,6 +170,13 @@ export function RecipeDetail({
             onClick={handleShare}
             title={shareCopied ? "Link copied!" : "Share recipe"}>
             {shareCopied ? <Check size={16} /> : <Share size={16} />}
+          </button>
+          <button
+            className={`${styles.deleteBtn} ${confirmingDelete ? styles.deleteBtnConfirming : ""}`}
+            onClick={handleDelete}
+            title={confirmingDelete ? "Tap again to delete" : "Delete recipe"}>
+            <Trash2 size={16} />
+            {confirmingDelete && <span>Delete?</span>}
           </button>
           <button className={styles.closeBtn} onClick={onClose} title="Close">
             <X size={20} />

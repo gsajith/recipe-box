@@ -84,6 +84,45 @@
   background: var(--orange-dark) !important;
 }
 
+.deleteBtn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-full);
+  height: 38px;
+  padding: 0 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.deleteBtn:hover {
+  background: var(--danger);
+  transform: scale(1.05);
+}
+
+.deleteBtnConfirming {
+  background: var(--danger);
+  animation: deletePulse 0.6s ease;
+}
+
+.deleteBtnConfirming:hover {
+  background: var(--danger);
+}
+
+@keyframes deletePulse {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
 .copiedLabel {
   background: var(--primary);
   color: white;
@@ -510,6 +549,22 @@
 
   .shareBtnCopied {
     background: rgba(200, 108, 68, 0.9);
+  }
+
+  .deleteBtn {
+    background: rgba(0, 0, 0, 0.72);
+    box-shadow: none;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+
+  .deleteBtn:hover {
+    background: var(--danger);
+    transform: none;
+  }
+
+  .deleteBtnConfirming {
+    background: rgba(201, 72, 50, 0.9);
   }
 
   .backBtn {

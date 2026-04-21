@@ -45,6 +45,7 @@ export function RecipeForm({ onSubmit, isLoading = false }: RecipeFormProps) {
     setIsOpen(false);
   };
 
+
   return (
     <>
       <button className={styles.addButton} onClick={() => setIsOpen(true)}>
