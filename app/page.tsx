@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Archive, Tag, Search, LayoutGrid, List } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Archive, Tag, Search, LayoutGrid, List, Clipboard, X } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import { RecipeForm } from "@/components/RecipeForm";
 import { AppHeader } from "@/components/AppHeader";
@@ -24,6 +24,85 @@ export default function Home() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [allTagsShown, setAllTagsShown] = useState(false);
+  const [clipboardUrl, setClipboardUrl] = useState<string | null>(null);
+  const [clipboardPreview, setClipboardPreview] = useState<{
+    title: string | null;
+    thumbnailUrl: string | null;
+  } | null>(null);
+  const lastOfferedUrl = useRef<string | null>(null);
+
+  // Check clipboard for a URL when the app comes to the foreground
+  useEffect(() => {
+    if (!user) return;
+
+    async function checkClipboard() {
+      try {
+        const text = await navigator.clipboard.readText();
+        const trimmed = text?.trim();
+        if (!trimmed?.match(/^https?:\/\//)) return;
+        if (trimmed === lastOfferedUrl.current) return;
+        setClipboardUrl(trimmed);
+      } catch {
+        // Clipboard access denied or unavailable — ignore silently
+      }
+    }
+
+    checkClipboard();
+
+    // visibilitychange fires before the document has focus (clipboard reads
+    // fail on Chrome until focus settles). window.focus fires after focus is
+    // established. Use both and deduplicate with a short debounce.
+    let debounce: ReturnType<typeof setTimeout> | null = null;
+    const trigger = () => {
+      if (debounce) clearTimeout(debounce);
+      debounce = setTimeout(checkClipboard, 50);
+    };
+    const onVisible = () => {
+      if (document.visibilityState === "visible") trigger();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", trigger);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", trigger);
+      if (debounce) clearTimeout(debounce);
+    };
+  }, [user]);
+
+  // Dismiss the banner when the URL is already saved
+  useEffect(() => {
+    if (clipboardUrl && recipes.some((r) => r.url === clipboardUrl)) {
+      setClipboardUrl(null);
+      lastOfferedUrl.current = clipboardUrl;
+    }
+  }, [recipes, clipboardUrl]);
+
+  // Fetch preview metadata whenever a new clipboard URL is detected
+  useEffect(() => {
+    if (!clipboardUrl) {
+      setClipboardPreview(null);
+      return;
+    }
+    setClipboardPreview(null);
+    fetch(`/api/recipes/preview?url=${encodeURIComponent(clipboardUrl)}`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data) setClipboardPreview({ title: data.title, thumbnailUrl: data.thumbnailUrl });
+      })
+      .catch(() => {});
+  }, [clipboardUrl]);
+
+  const handleSaveFromClipboard = async () => {
+    if (!clipboardUrl) return;
+    lastOfferedUrl.current = clipboardUrl;
+    setClipboardUrl(null);
+    await handleAddRecipe(clipboardUrl);
+  };
+
+  const handleDismissClipboard = () => {
+    lastOfferedUrl.current = clipboardUrl;
+    setClipboardUrl(null);
+  };
 
   // Fetch recipes when user is loaded
   useEffect(() => {
@@ -380,6 +459,36 @@ export default function Home() {
           onMetadataUpdate={handleUpdateMetadata}
           onClose={() => setSelectedRecipe(null)}
         />
+      )}
+
+      {clipboardUrl && (
+        <div className={styles.clipboardBanner}>
+          <div className={styles.clipboardThumb}>
+            {clipboardPreview?.thumbnailUrl ? (
+              <img src={clipboardPreview.thumbnailUrl} alt="" />
+            ) : (
+              <Clipboard size={16} className={styles.clipboardIcon} />
+            )}
+          </div>
+          <div className={styles.clipboardText}>
+            <span className={styles.clipboardTitle}>
+              {clipboardPreview?.title ?? <span className={styles.clipboardTitleLoading} />}
+            </span>
+            <span className={styles.clipboardUrl}>{clipboardUrl}</span>
+          </div>
+          <button
+            className={styles.clipboardSaveBtn}
+            onClick={handleSaveFromClipboard}
+            disabled={isLoading}>
+            {isLoading ? "Saving…" : "Save"}
+          </button>
+          <button
+            className={styles.clipboardDismissBtn}
+            onClick={handleDismissClipboard}
+            aria-label="Dismiss">
+            <X size={14} />
+          </button>
+        </div>
       )}
     </div>
   );
