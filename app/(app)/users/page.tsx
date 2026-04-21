@@ -143,11 +143,6 @@ export default function UsersPage() {
                   <div
                     className={styles.actions}
                     onClick={(e) => e.stopPropagation()}>
-                    {u.follows_me && !following && (
-                      <span className={styles.followsYouBadge}>
-                        Follows you
-                      </span>
-                    )}
                     {following ? (
                       <span className={styles.followingBadge}>Following</span>
                     ) : (
