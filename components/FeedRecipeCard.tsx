@@ -24,11 +24,10 @@ export function FeedRecipeCard({ recipe }: FeedRecipeCardProps) {
   };
 
   return (
-    <a
-      href={recipe.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`${cardStyles.recipeCard} ${styles.feedCard}`}>
+    <div
+      className={`${cardStyles.recipeCard} ${styles.feedCard}`}
+      onClick={() => window.open(recipe.url, "_blank", "noopener,noreferrer")}
+      style={{ cursor: "pointer" }}>
       {recipe.thumbnail_url && (
         <div className={cardStyles.thumbnailWrapper}>
           <img
@@ -88,6 +87,6 @@ export function FeedRecipeCard({ recipe }: FeedRecipeCardProps) {
           </div>
         )}
       </div>
-    </a>
+    </div>
   );
 }

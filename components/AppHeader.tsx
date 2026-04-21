@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { UserMenu } from "./UserMenu";
+import { NotificationPanel } from "./NotificationPanel";
 import styles from "./AppHeader.module.css";
 
 export function AppHeader() {
@@ -12,7 +13,10 @@ export function AppHeader() {
           Recipe<b>Box</b>
         </em>
       </Link>
-      <UserMenu />
+      <div className={styles.right}>
+        <NotificationPanel />
+        <UserMenu />
+      </div>
     </header>
   );
 }

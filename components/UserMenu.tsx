@@ -3,7 +3,7 @@
 import { useUser, useClerk } from "@clerk/nextjs";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
-import { User, Settings, LogOut, ChevronDown, Home, Rss } from "lucide-react";
+import { User, Settings, LogOut, ChevronDown, Home } from "lucide-react";
 import Link from "next/link";
 import styles from "./UserMenu.module.css";
 
@@ -68,13 +68,6 @@ export function UserMenu() {
             onClick={() => setOpen(false)}>
             <Home size={15} />
             Home
-          </Link>
-          <Link
-            href="/feed"
-            className={`${styles.item} ${pathname === "/feed" ? styles.itemActive : ""}`}
-            onClick={() => setOpen(false)}>
-            <Rss size={15} />
-            Feed
           </Link>
           <Link
             href={profileHref}

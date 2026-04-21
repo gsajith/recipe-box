@@ -5,6 +5,12 @@
   margin-bottom: 2.5rem;
 }
 
+.right {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
 
 .logo {
   font-family: var(--font-serif), Georgia, serif;

@@ -15,24 +15,20 @@
 }
 
 .follow {
-  background: var(--accent);
-  color: var(--primary);
-  border-color: var(--accent);
+  background: var(--orange);
+  color: white;
 }
 
 .follow:hover:not(:disabled) {
-  background: #e8b92e;
-  border-color: #e8b92e;
+  background: var(--orange-dark);
 }
 
-.following {
-  background: transparent;
+.unfollow {
+  background: var(--primary);
   color: rgba(255, 255, 255, 0.85);
-  border-color: rgba(255, 255, 255, 0.5);
 }
 
-.following:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.7);
-  color: white;
+.unfollow:hover:not(:disabled) {
+  background: var(--primary-dark);
+  color: rgba(255, 255, 255, 0.85);
 }

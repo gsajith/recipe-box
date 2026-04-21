@@ -8,9 +8,13 @@ interface FollowButtonProps {
   initialIsFollowing: boolean;
 }
 
-export function FollowButton({ username, initialIsFollowing }: FollowButtonProps) {
+export function FollowButton({
+  username,
+  initialIsFollowing,
+}: FollowButtonProps) {
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const [loading, setLoading] = useState(false);
+  const [hovered, setHovered] = useState(false);
 
   const toggle = async () => {
     setLoading(true);
@@ -30,12 +34,16 @@ export function FollowButton({ username, initialIsFollowing }: FollowButtonProps
     }
   };
 
+  const followingClass = isFollowing ? styles.unfollow : styles.follow;
+
   return (
     <button
-      className={`${styles.btn} ${isFollowing ? styles.following : styles.follow}`}
+      className={`${styles.btn} ${followingClass}`}
       onClick={toggle}
-      disabled={loading}>
-      {loading ? "…" : isFollowing ? "Following" : "Follow"}
+      disabled={loading}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}>
+      {loading ? "…" : isFollowing ? "Unfollow" : "Follow"}
     </button>
   );
 }

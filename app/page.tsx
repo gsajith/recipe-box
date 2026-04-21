@@ -37,6 +37,9 @@ export default function Home() {
     filterRecipes(recipes, searchQuery);
   }, [selectedTags]);
 
+  // TODO: implement paginated loading (e.g. cursor-based) so large recipe
+  // collections don't load all at once — fetch a page at a time and append
+  // results as the user scrolls or clicks "load more".
   const fetchRecipes = async () => {
     setIsFetching(true);
     try {

@@ -10,6 +10,10 @@ export default function FeedPage() {
   const [recipes, setRecipes] = useState<FeedRecipe[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // TODO: implement paginated loading (e.g. cursor-based) so the feed doesn't
+  // load all followed-user recipes at once — fetch a page at a time and append
+  // as the user scrolls or clicks "load more". The notification panel fetches
+  // from the same /api/feed endpoint and will need the same treatment.
   useEffect(() => {
     fetch("/api/feed")
       .then((r) => r.json())
