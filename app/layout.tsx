@@ -21,6 +21,16 @@ export const metadata: Metadata = {
   ),
   title: "RecipeBox",
   description: "Save and manage your favorite recipes",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
+  other: {
+    "theme-color": "#234b39",
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
+    "apple-mobile-web-app-title": "RecipeBox",
+  },
 };
 
 export default async function RootLayout({

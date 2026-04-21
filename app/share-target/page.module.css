@@ -1,0 +1,111 @@
+.page {
+  min-height: 100dvh;
+  background: var(--surface-variant);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--border);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+  padding: 2rem 1.75rem;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.heading {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.urlPreview {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  margin: 0;
+  word-break: break-all;
+  text-align: left;
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  background: var(--surface-variant);
+  border-radius: var(--radius-md);
+}
+
+.urlPreview svg {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+}
+
+.statusText {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+
+.statusText.success {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.statusText.muted {
+  color: var(--text-secondary);
+}
+
+.statusText.error {
+  color: #c0392b;
+}
+
+.primaryBtn {
+  display: block;
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: var(--orange);
+  color: white;
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 1rem;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(200, 108, 68, 0.3);
+}
+
+.primaryBtn:hover {
+  background: var(--orange-dark);
+  transform: translateY(-1px);
+}
+
+.secondaryBtn {
+  display: block;
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: transparent;
+  color: var(--text-primary);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.secondaryBtn:hover {
+  background: var(--surface-variant);
+}
