@@ -14,6 +14,7 @@ export function UserMenu() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -31,6 +32,7 @@ export function UserMenu() {
       .then((r) => r.json())
       .then((data) => {
         if (data?.username) setUsername(data.username);
+        if (data?.display_name) setDisplayName(data.display_name);
       })
       .catch(() => {});
   }, []);
@@ -39,11 +41,9 @@ export function UserMenu() {
     return <a href="/sign-in" className={styles.signInLink}>Sign in</a>;
   }
 
-  const displayName = user.firstName || user.fullName || username || "Account";
-  const profileHref = username ? `/user/${username}` : `/user/${user.id}`;
-  const isOnProfile = username
-    ? pathname === `/user/${username}`
-    : pathname === `/user/${user.id}`;
+  const name = displayName || username || "Account";
+  const profileHref = username ? `/user/${username}` : "/onboarding";
+  const isOnProfile = username ? pathname === `/user/${username}` : false;
 
   return (
     <div className={styles.container} ref={ref}>
@@ -52,8 +52,8 @@ export function UserMenu() {
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         aria-haspopup="true">
-        <img src={user.imageUrl} alt={displayName} className={styles.avatar} />
-        Hi,&nbsp;<span className={styles.name}>{displayName}</span>!
+        <img src={user.imageUrl} alt={name} className={styles.avatar} />
+        Hi,&nbsp;<span className={styles.name}>{name}</span>!
         <ChevronDown
           size={13}
           className={`${styles.chevron} ${open ? styles.chevronOpen : ""}`}

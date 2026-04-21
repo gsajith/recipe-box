@@ -1,18 +1,17 @@
 import type { Metadata } from "next";
-import { clerkClient } from "@clerk/nextjs/server";
 import { supabaseServer as supabase } from "@/lib/supabase";
 
 async function getProfileMeta(username: string) {
   try {
     const { data: profile, error: profileError } = await supabase
       .from("user_profiles")
-      .select("clerk_user_id, username")
+      .select("clerk_user_id, username, display_name")
       .eq("username", username)
       .single();
 
     if (profileError || !profile) return null;
 
-    const [followerResult, followingResult, recipeResult, clerkResult] =
+    const [followerResult, followingResult, recipeResult] =
       await Promise.allSettled([
         supabase
           .from("follows")
@@ -26,9 +25,6 @@ async function getProfileMeta(username: string) {
           .from("recipes")
           .select("id", { count: "exact", head: true })
           .eq("user_id", profile.clerk_user_id),
-        clerkClient()
-          .then((c) => c.users.getUser(profile.clerk_user_id))
-          .catch(() => null),
       ]);
 
     const followerCount =
@@ -41,14 +37,10 @@ async function getProfileMeta(username: string) {
         : 0;
     const recipeCount =
       recipeResult.status === "fulfilled" ? (recipeResult.value.count ?? 0) : 0;
-    const clerkUser =
-      clerkResult.status === "fulfilled" ? clerkResult.value : null;
 
     return {
       username: profile.username,
-      display_name:
-        clerkUser?.fullName || clerkUser?.firstName || profile.username,
-      image_url: clerkUser?.imageUrl ?? null,
+      display_name: profile.display_name,
       follower_count: followerCount,
       following_count: followingCount,
       recipe_count: recipeCount,
@@ -102,16 +94,12 @@ export async function generateMetadata({
       description,
       url: `/user/${username}`,
       siteName: "RecipeBox",
-      images: profile.image_url
-        ? [{ url: profile.image_url, alt: displayName, width: 400, height: 400 }]
-        : [],
       type: "profile",
     },
     twitter: {
       card: "summary",
       title,
       description,
-      images: profile.image_url ? [profile.image_url] : [],
     },
   };
 }

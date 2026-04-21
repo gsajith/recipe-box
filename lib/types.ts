@@ -18,8 +18,8 @@ export interface FeedRecipe extends Recipe {
 
 export interface UserProfile {
   id: string;
-  clerk_user_id: string;
   username: string;
+  display_name: string | null;
   created_at: string;
   updated_at: string;
 }

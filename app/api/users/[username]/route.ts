@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { clerkClient } from "@clerk/nextjs/server";
 import { supabaseServer as supabase } from "@/lib/supabase";
 
 export async function GET(
@@ -8,26 +7,17 @@ export async function GET(
 ) {
   const { username } = await params;
 
-  // Try username first, fall back to clerk_user_id for direct-ID links
-  let { data: profile, error } = await supabase
+  const { data: profile, error } = await supabase
     .from("user_profiles")
-    .select("*")
+    .select("username, display_name, clerk_user_id")
     .eq("username", username)
     .single();
-
-  if (error || !profile) {
-    ({ data: profile, error } = await supabase
-      .from("user_profiles")
-      .select("*")
-      .eq("clerk_user_id", username)
-      .single());
-  }
 
   if (error || !profile) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  const [{ count: followerCount }, { count: followingCount }, clerkUser] =
+  const [{ count: followerCount }, { count: followingCount }] =
     await Promise.all([
       supabase
         .from("follows")
@@ -37,17 +27,12 @@ export async function GET(
         .from("follows")
         .select("*", { count: "exact", head: true })
         .eq("follower_id", profile.clerk_user_id),
-      (await clerkClient())
-        .users.getUser(profile.clerk_user_id)
-        .catch(() => null),
     ]);
 
   return NextResponse.json({
-    ...profile,
+    username: profile.username,
+    display_name: profile.display_name,
     follower_count: followerCount ?? 0,
     following_count: followingCount ?? 0,
-    image_url: clerkUser?.imageUrl ?? null,
-    display_name:
-      clerkUser?.fullName || clerkUser?.firstName || profile.username || null,
   });
 }

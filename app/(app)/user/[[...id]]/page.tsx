@@ -11,13 +11,10 @@ import recipeStyles from "@/components/RecipeList.module.css";
 import type { Recipe } from "@/lib/types";
 
 interface ProfileData {
-  id: string;
   username: string;
-  clerk_user_id: string;
+  display_name: string | null;
   follower_count: number;
   following_count: number;
-  image_url: string | null;
-  display_name: string | null;
 }
 
 type FanSnapshot = {
@@ -37,6 +34,7 @@ export default function ProfilePage() {
   const router = useRouter();
 
   const [myUsername, setMyUsername] = useState<string | null>(null);
+  const [myDisplayName, setMyDisplayName] = useState<string | null>(null);
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -53,6 +51,7 @@ export default function ProfilePage() {
       .then((r) => r.json())
       .then((data) => {
         if (data?.username) setMyUsername(data.username);
+        if (data?.display_name) setMyDisplayName(data.display_name);
       })
       .catch(() => {});
   }, []);
@@ -82,7 +81,7 @@ export default function ProfilePage() {
       .then(([profileData, recipesData, followData]) => {
         const p = profileData as ProfileData & { error?: string };
         if (p.error && targetUsername) {
-          router.replace("/settings?error=username-required");
+          router.replace("/");
           return;
         }
         if (!p.error) setProfile(p);
@@ -125,7 +124,6 @@ export default function ProfilePage() {
       const dx = snapshots[i].cx - gridCx;
       const dy = snapshots[i].cy - gridCy;
       const scale = snapshots[i].w / rect.width;
-      const opacity = 0;
 
       el.style.transform = `translate(${dx}px, ${dy}px) rotate(${snapshots[i].rotation}deg) scale(${scale})`;
       el.style.transformOrigin = "center center";
@@ -161,12 +159,16 @@ export default function ProfilePage() {
   }
 
   const isOwnProfile = !targetUsername || targetUsername === myUsername;
-  const displayName =
-    isOwnProfile && user
-      ? user.fullName || user.firstName || myUsername || ""
-      : profile?.display_name || displayUsername || "";
-  const avatarUrl =
-    isOwnProfile && user ? user.imageUrl : (profile?.image_url ?? null);
+
+  // Display name: own profile uses our API data; other profiles use their profile data
+  const displayName = isOwnProfile
+    ? myDisplayName || myUsername || ""
+    : profile?.display_name || profile?.username || "";
+
+  const usernameLabel = isOwnProfile ? myUsername : profile?.username;
+
+  // Avatar: own profile uses Clerk's image (already available client-side); others use initials
+  const avatarUrl = isOwnProfile && user ? user.imageUrl : null;
 
   const followerCount = profile?.follower_count ?? 0;
   const followingCount = profile?.following_count ?? 0;
@@ -218,6 +220,9 @@ export default function ProfilePage() {
         <div className={styles.profileCard}>
           <div className={styles.cardInfo}>
             <h1 className={styles.name}>{displayName}</h1>
+            {usernameLabel && (
+              <div className={styles.handle}>@{usernameLabel}</div>
+            )}
             <div className={styles.stats}>
               <div>
                 <span className={styles.statCount}>{followerCount}</span>

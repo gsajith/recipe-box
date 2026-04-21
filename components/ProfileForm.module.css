@@ -1,0 +1,101 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+}
+
+.label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.labelOptional {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.inputWrap {
+  position: relative;
+}
+
+.prefix {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  font-size: 0.9375rem;
+  pointer-events: none;
+}
+
+.input {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.9375rem;
+  background: var(--background);
+  color: var(--text-primary);
+  transition: border-color 0.15s;
+  font-family: inherit;
+}
+
+.inputWithPrefix {
+  padding-left: 1.75rem;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.input.inputError {
+  border-color: var(--danger);
+}
+
+.input.inputOk {
+  border-color: #2e7d52;
+}
+
+.hint {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.hintError {
+  font-size: 0.8125rem;
+  color: var(--danger);
+}
+
+.hintOk {
+  font-size: 0.8125rem;
+  color: #2e7d52;
+}
+
+.submitBtn {
+  width: 100%;
+  margin-top: 0.25rem;
+  padding: 0.625rem 1.25rem;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: var(--primary-dark);
+}
+
+.submitBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

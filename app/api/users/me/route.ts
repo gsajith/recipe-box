@@ -11,7 +11,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from("user_profiles")
-    .select("*")
+    .select("id, username, display_name, created_at, updated_at")
     .eq("clerk_user_id", userId)
     .single();
 
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { username } = body;
+  const { username, display_name } = body;
 
   if (username !== undefined) {
     if (!isValidUsername(username)) {
@@ -57,16 +57,29 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const upsertData: Record<string, string> = {
+  if (display_name !== undefined && display_name !== null) {
+    const trimmed = display_name.trim();
+    if (trimmed.length > 50) {
+      return NextResponse.json(
+        { error: "Display name must be 50 characters or fewer" },
+        { status: 400 },
+      );
+    }
+  }
+
+  const upsertData: Record<string, string | null> = {
     clerk_user_id: userId,
     updated_at: new Date().toISOString(),
   };
   if (username !== undefined) upsertData.username = username;
+  if (display_name !== undefined)
+    upsertData.display_name =
+      display_name === null ? null : display_name.trim() || null;
 
   const { data, error } = await supabase
     .from("user_profiles")
     .upsert(upsertData, { onConflict: "clerk_user_id" })
-    .select()
+    .select("id, username, display_name, created_at, updated_at")
     .single();
 
   if (error) {

@@ -1,4 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
 const isPublicRoute = createRouteMatcher([
   "/",
@@ -13,9 +15,36 @@ const isPublicRoute = createRouteMatcher([
   "/twitter-image(.*)",   // Twitter card image
 ]);
 
+// Routes that skip the onboarding username check
+const isOnboardingExempt = createRouteMatcher([
+  "/onboarding",
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+  "/api/(.*)",
+  "/opengraph-image(.*)",
+  "/twitter-image(.*)",
+]);
+
 export const proxy = clerkMiddleware(async (auth, req) => {
   if (!isPublicRoute(req)) {
     await auth.protect();
+  }
+
+  const { userId } = await auth();
+  if (userId && !isOnboardingExempt(req)) {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    );
+    const { data } = await supabase
+      .from("user_profiles")
+      .select("username")
+      .eq("clerk_user_id", userId)
+      .single();
+
+    if (!data?.username) {
+      return NextResponse.redirect(new URL("/onboarding", req.url));
+    }
   }
 });
 
