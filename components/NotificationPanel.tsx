@@ -95,7 +95,7 @@ export function NotificationPanel() {
   }, []);
 
   const unreadCount = recipes.filter((r) =>
-    lastOpenedAt ? r.created_at > lastOpenedAt : true
+    lastOpenedAt ? r.created_at > lastOpenedAt : true,
   ).length;
 
   const isNew = (recipe: FeedRecipe) =>
@@ -117,8 +117,13 @@ export function NotificationPanel() {
 
       {open && (
         <>
-          <div className={`${styles.overlay} ${closing ? styles.overlayClosing : ""}`} onClick={handleClose} />
-          <div className={`${styles.panel} ${closing ? styles.panelClosing : ""}`} ref={panelRef}>
+          <div
+            className={`${styles.overlay} ${closing ? styles.overlayClosing : ""}`}
+            onClick={handleClose}
+          />
+          <div
+            className={`${styles.panel} ${closing ? styles.panelClosing : ""}`}
+            ref={panelRef}>
             <div className={styles.panelHeader}>
               <span className={styles.panelTitle}>Following</span>
               <button
@@ -166,7 +171,7 @@ export function NotificationPanel() {
                         </a>
                         {recipe.attribution_username && (
                           <>
-                            <span className={styles.dot}>·</span>
+                            <span className={styles.dot}>•</span>
                             <Link
                               href={`/user/${recipe.attribution_username}`}
                               className={styles.attrLink}
@@ -178,7 +183,7 @@ export function NotificationPanel() {
                             </Link>
                           </>
                         )}
-                        <span className={styles.dot}>·</span>
+                        <span className={styles.dot}>•</span>
                         <span className={styles.timeAgo}>
                           {timeAgo(recipe.created_at)}
                         </span>
