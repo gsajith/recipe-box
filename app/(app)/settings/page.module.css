@@ -2,14 +2,6 @@
   padding-top: 1rem;
 }
 
-.title {
-  font-family: var(--font-serif), Georgia, serif;
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 2rem;
-}
-
 .section {
   background: var(--surface);
   border: 1px solid var(--border);

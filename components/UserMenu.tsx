@@ -3,7 +3,7 @@
 import { useUser, useClerk } from "@clerk/nextjs";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
-import { User, Settings, LogOut, ChevronDown, Home } from "lucide-react";
+import { User, Settings, LogOut, ChevronDown, Home, Users } from "lucide-react";
 import Link from "next/link";
 import styles from "./UserMenu.module.css";
 
@@ -38,7 +38,11 @@ export function UserMenu() {
   }, []);
 
   if (!user) {
-    return <a href="/sign-in" className={styles.signInLink}>Sign in</a>;
+    return (
+      <a href="/sign-in" className={styles.signInLink}>
+        Sign in
+      </a>
+    );
   }
 
   const name = displayName || username || "Account";
@@ -75,6 +79,13 @@ export function UserMenu() {
             onClick={() => setOpen(false)}>
             <User size={15} />
             Profile
+          </Link>
+          <Link
+            href="/users"
+            className={`${styles.item} ${pathname === "/users" ? styles.itemActive : ""}`}
+            onClick={() => setOpen(false)}>
+            <Users size={15} />
+            User list
           </Link>
           <Link
             href="/settings"

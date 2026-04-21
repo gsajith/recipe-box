@@ -31,8 +31,6 @@ export default function SettingsPage() {
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>Settings</h1>
-
       {errorParam === "username-required" && (
         <p className={styles.errorBanner}>
           You need to set a username before you can view your profile.
