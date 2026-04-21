@@ -16,6 +16,20 @@ export interface FeedRecipe extends Recipe {
   attribution_username: string | null;
 }
 
+export interface FeedRecipeItem extends FeedRecipe {
+  type: "recipe";
+}
+
+export interface FollowNotification {
+  type: "follow";
+  id: string;
+  actor_username: string;
+  is_following_back: boolean;
+  created_at: string;
+}
+
+export type FeedItem = FeedRecipeItem | FollowNotification;
+
 export interface UserProfile {
   id: string;
   username: string;

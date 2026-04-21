@@ -275,11 +275,48 @@
 }
 
 .attrLink {
-  color: var(--primary);
-  font-weight: 600;
+  color: var(--orange);
+  font-weight: 900;
   text-decoration: none;
 }
 
 .attrLink:hover {
   text-decoration: underline;
+}
+
+.followAvatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.followBackBtn {
+  flex-shrink: 0;
+  padding: 0.3rem 0.75rem;
+  background: var(--orange);
+  color: white;
+  border: none;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: filter 0.15s ease;
+}
+
+.followBackBtn:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.followBackBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }

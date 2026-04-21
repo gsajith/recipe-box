@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Bell, X, ExternalLink } from "lucide-react";
 import Link from "next/link";
-import type { FeedRecipe } from "@/lib/types";
+import type { FeedItem } from "@/lib/types";
 import styles from "./NotificationPanel.module.css";
 
 function getHostname(url: string) {
@@ -35,16 +35,18 @@ const LS_KEY = "notificationPanel_lastOpenedAt";
 export function NotificationPanel() {
   const [open, setOpen] = useState(false);
   const [closing, setClosing] = useState(false);
-  const [recipes, setRecipes] = useState<FeedRecipe[]>([]);
+  const [items, setItems] = useState<FeedItem[]>([]);
   // lastSeenAt: the timestamp from before the panel was opened (used to mark new rows)
   const [lastSeenAt, setLastSeenAt] = useState<string | null>(null);
+  const [followedBack, setFollowedBack] = useState<Set<string>>(new Set());
+  const [loadingFollow, setLoadingFollow] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch("/api/feed")
       .then((r) => r.json())
       .then((data) => {
-        if (Array.isArray(data)) setRecipes(data);
+        if (Array.isArray(data)) setItems(data);
       })
       .catch(() => {});
   }, []);
@@ -94,12 +96,30 @@ export function NotificationPanel() {
     setLastOpenedAt(localStorage.getItem(LS_KEY));
   }, []);
 
-  const unreadCount = recipes.filter((r) =>
-    lastOpenedAt ? r.created_at > lastOpenedAt : true,
+  const unreadCount = items.filter((item) =>
+    lastOpenedAt ? item.created_at > lastOpenedAt : true,
   ).length;
 
-  const isNew = (recipe: FeedRecipe) =>
-    lastSeenAt ? recipe.created_at > lastSeenAt : true;
+  const isNew = (item: FeedItem) =>
+    lastSeenAt ? item.created_at > lastSeenAt : true;
+
+  const handleFollowBack = async (username: string) => {
+    setLoadingFollow(username);
+    try {
+      const res = await fetch(`/api/users/${username}/follow`, {
+        method: "POST",
+      });
+      if (res.ok || res.status === 409) {
+        setFollowedBack((prev) => new Set([...prev, username]));
+      } else if (res.status === 401) {
+        window.location.href = "/sign-in";
+      }
+    } catch {
+      // ignore
+    } finally {
+      setLoadingFollow(null);
+    }
+  };
 
   return (
     <>
@@ -135,63 +155,112 @@ export function NotificationPanel() {
             </div>
 
             <div className={styles.panelBody}>
-              {recipes.length === 0 ? (
+              {items.length === 0 ? (
                 <div className={styles.empty}>
                   <p>Nothing here yet.</p>
                   <p>Follow people to see their saved recipes.</p>
                 </div>
               ) : (
-                recipes.map((recipe) => (
-                  <div
-                    key={recipe.id}
-                    className={`${styles.row} ${isNew(recipe) ? styles.rowNew : ""}`}
-                    onClick={() =>
-                      window.open(recipe.url, "_blank", "noopener,noreferrer")
-                    }>
-                    {recipe.thumbnail_url ? (
-                      <img
-                        src={recipe.thumbnail_url}
-                        alt={recipe.title}
-                        className={styles.thumb}
-                      />
-                    ) : (
-                      <div className={styles.thumbPlaceholder} />
-                    )}
-                    <div className={styles.rowContent}>
-                      <div className={styles.rowTitle}>{recipe.title}</div>
-                      <div className={styles.rowMeta}>
-                        <a
-                          href={recipe.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={styles.sourceLink}
-                          onClick={(e) => e.stopPropagation()}>
-                          <ExternalLink size={11} />
-                          {getHostname(recipe.url)}
-                        </a>
-                        {recipe.attribution_username && (
-                          <>
-                            <span className={styles.dot}>•</span>
-                            <Link
-                              href={`/user/${recipe.attribution_username}`}
-                              className={styles.attrLink}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleClose();
-                              }}>
-                              @{recipe.attribution_username}
-                            </Link>
-                          </>
-                        )}
-                        <span className={styles.dot}>•</span>
-                        <span className={styles.timeAgo}>
-                          {timeAgo(recipe.created_at)}
-                        </span>
+                items.map((item) => {
+                  if (item.type === "follow") {
+                    const isFollowingBack =
+                      item.is_following_back ||
+                      followedBack.has(item.actor_username);
+                    return (
+                      <div
+                        key={item.id}
+                        className={`${styles.row} ${isNew(item) ? styles.rowNew : ""}`}
+                        onClick={() => {
+                          handleClose();
+                          window.location.href = `/user/${item.actor_username}`;
+                        }}>
+                        <div className={styles.followAvatar}>
+                          {item.actor_username[0].toUpperCase()}
+                        </div>
+                        <div className={styles.rowContent}>
+                          <div className={styles.rowTitle}>
+                            <span className={styles.attrLink}>
+                              @{item.actor_username}
+                            </span>{" "}
+                            started following you!
+                          </div>
+                          <div className={styles.rowMeta}>
+                            <span className={styles.timeAgo}>
+                              {timeAgo(item.created_at)}
+                            </span>
+                            {!isFollowingBack && (
+                              <button
+                                className={styles.followBackBtn}
+                                disabled={loadingFollow === item.actor_username}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleFollowBack(item.actor_username);
+                                }}>
+                                {loadingFollow === item.actor_username
+                                  ? "…"
+                                  : "Follow"}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        {isNew(item) && <span className={styles.newDot} />}
                       </div>
+                    );
+                  }
+
+                  // type === "recipe"
+                  return (
+                    <div
+                      key={item.id}
+                      className={`${styles.row} ${isNew(item) ? styles.rowNew : ""}`}
+                      onClick={() =>
+                        window.open(item.url, "_blank", "noopener,noreferrer")
+                      }>
+                      {item.thumbnail_url ? (
+                        <img
+                          src={item.thumbnail_url}
+                          alt={item.title}
+                          className={styles.thumb}
+                        />
+                      ) : (
+                        <div className={styles.thumbPlaceholder} />
+                      )}
+                      <div className={styles.rowContent}>
+                        <div className={styles.rowTitle}>{item.title}</div>
+                        <div className={styles.rowMeta}>
+                          <a
+                            href={item.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.sourceLink}
+                            onClick={(e) => e.stopPropagation()}>
+                            <ExternalLink size={11} />
+                            {getHostname(item.url)}
+                          </a>
+                          {item.attribution_username && (
+                            <>
+                              <span className={styles.dot}>•</span>
+                              <Link
+                                href={`/user/${item.attribution_username}`}
+                                className={styles.attrLink}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleClose();
+                                }}>
+                                @{item.attribution_username}
+                              </Link>
+                            </>
+                          )}
+                          <span className={styles.dot}>•</span>
+                          <span className={styles.timeAgo}>
+                            {timeAgo(item.created_at)}
+                          </span>
+                        </div>
+                      </div>
+                      {isNew(item) && <span className={styles.newDot} />}
                     </div>
-                    {isNew(recipe) && <span className={styles.newDot} />}
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>
