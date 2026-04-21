@@ -13,6 +13,7 @@ import type { Recipe } from "@/lib/types";
 interface ProfileData {
   username: string;
   display_name: string | null;
+  image_url: string | null;
   follower_count: number;
   following_count: number;
 }
@@ -167,8 +168,8 @@ export default function ProfilePage() {
 
   const usernameLabel = isOwnProfile ? myUsername : profile?.username;
 
-  // Avatar: own profile uses Clerk's image (already available client-side); others use initials
-  const avatarUrl = isOwnProfile && user ? user.imageUrl : null;
+  // Avatar: own profile uses Clerk's image (already available client-side); others use profile API data
+  const avatarUrl = isOwnProfile && user ? user.imageUrl : (profile?.image_url ?? null);
 
   const followerCount = profile?.follower_count ?? 0;
   const followingCount = profile?.following_count ?? 0;

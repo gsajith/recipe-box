@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ProfileForm } from "@/components/ProfileForm";
 import styles from "./page.module.css";
 
-export default function SettingsPage() {
+function SettingsContent() {
   const searchParams = useSearchParams();
   const errorParam = searchParams.get("error");
   const [initialUsername, setInitialUsername] = useState("");
@@ -30,7 +30,7 @@ export default function SettingsPage() {
   }, []);
 
   return (
-    <div className={styles.page}>
+    <>
       {errorParam === "username-required" && (
         <p className={styles.errorBanner}>
           You need to set a username before you can view your profile.
@@ -67,6 +67,16 @@ export default function SettingsPage() {
           }
         />
       </div>
+    </>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <div className={styles.page}>
+      <Suspense>
+        <SettingsContent />
+      </Suspense>
     </div>
   );
 }
