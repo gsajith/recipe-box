@@ -167,12 +167,7 @@ async function extractInstagramMeta(url: URL): Promise<RecipeMetadata> {
     });
     const $ = cheerio.load(data);
 
-    // Prefer image_versions2 candidates over og:image — the og:image has a
-    // composite play-button overlay (stp=cmp1_...) while image_versions2 urls
-    // use stp=dst-jpg_e15_tt6 which is the clean still frame at full resolution.
-    const cleanThumb = extractInstagramCleanThumbnail(data);
     thumbnailUrl =
-      cleanThumb ||
       $('meta[property="og:image"]').attr("content") ||
       $('meta[name="twitter:image"]').attr("content") ||
       null;
@@ -188,23 +183,6 @@ async function extractInstagramMeta(url: URL): Promise<RecipeMetadata> {
 
   const extracted = await extractMetadataFromCaption(caption, fallbackTitle);
   return { ...extracted, thumbnailUrl };
-}
-
-/**
- * Pull the highest-resolution clean thumbnail out of the page's embedded
- * image_versions2 JSON. These URLs have no composite play-button overlay
- * (they use stp=dst-jpg_e15 rather than stp=cmp1_dst-jpg_e35).
- */
-function extractInstagramCleanThumbnail(html: string): string | null {
-  const idx = html.indexOf("image_versions2");
-  if (idx === -1) return null;
-  // URLs inside JSON blocks use escaped slashes (\/) — normalize to / first
-  const chunk = html.slice(idx, idx + 3000).replace(/\\\//g, "/");
-  // Match the first https CDN jpg URL in the candidates array
-  const m = chunk.match(/https:\/\/scontent[^"]+\.jpg[^"]*/);
-  if (!m) return null;
-  // The URL may contain HTML entities (& → &amp;) — unescape them
-  return m[0].replace(/&amp;/g, "&");
 }
 
 /**
