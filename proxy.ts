@@ -10,6 +10,8 @@ const isPublicRoute = createRouteMatcher([
   "/api/users/(.*)", // public reads; mutations check auth inside handlers
   "/share/(.*)",     // shared recipe pages (public, no auth required to view)
   "/api/share/(.*)", // public share data endpoint
+  "/api/ig-thumb/(.*)", // instagram thumbnails — rendered on public share pages
+                        // and fetched cookie-less by the OG image generator
   "/share-target(.*)", // PWA share target — auth handled in the page itself
   "/opengraph-image(.*)", // OG image — must be public for link previews
   "/twitter-image(.*)",   // Twitter card image

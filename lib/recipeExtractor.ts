@@ -143,50 +143,69 @@ function instagramTitle(url: URL): string {
   return "Instagram Post";
 }
 
+/** Instagram serves full server-rendered HTML (og tags + JSON data) to crawlers. */
+const INSTAGRAM_CRAWLER_HEADERS = {
+  "User-Agent":
+    "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+  Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+  "Accept-Language": "en-US,en;q=0.9",
+  "Accept-Encoding": "gzip, deflate, br",
+  Connection: "keep-alive",
+};
+
+/** The post id in /p/<code>/, /reel/<code>/, /reels/<code>/ or /tv/<code>/. */
+export function instagramShortcode(url: URL): string | null {
+  return url.pathname.match(/^\/(?:p|reel|reels|tv)\/([\w-]+)/)?.[1] ?? null;
+}
+
 /**
- * Build a thumbnail URL from the post's shortcode.
+ * Thumbnails are served through our own origin rather than hotlinked.
  *
- * og:image points at a signed scontent.cdninstagram.com URL whose oe/oh params
- * expire after a few weeks — it loads at save time and 403s later, which is why
- * stored thumbnails kept going dead. This /media/ endpoint is unsigned and never
- * expires: Instagram resolves it to a current CDN image on every request. It
- * accepts the /p/ path for reel and tv shortcodes too.
+ * Instagram's og:image is a signed CDN url that expires after ~4 days, so
+ * storing it directly means every thumbnail goes dead within the week. Proxying
+ * lets us re-resolve a live url on each request. It also sidesteps the CDN's
+ * cross-origin-resource-policy, which browsers enforce on every image variant
+ * except the og:image composite.
  */
-export function instagramThumbnailUrl(url: URL): string | null {
-  const shortcode = url.pathname.match(
-    /^\/(?:p|reel|reels|tv)\/([\w-]+)/,
-  )?.[1];
-  return shortcode
-    ? `https://www.instagram.com/p/${shortcode}/media/?size=l`
-    : null;
+export function instagramThumbnailPath(shortcode: string): string {
+  return `/api/ig-thumb/${shortcode}`;
+}
+
+/** Resolve a post's current (short-lived) og:image url. */
+export async function fetchInstagramOgImage(
+  shortcode: string,
+): Promise<string | null> {
+  const { data } = await axios.get(
+    `https://www.instagram.com/p/${shortcode}/`,
+    { headers: INSTAGRAM_CRAWLER_HEADERS, timeout: 15000, maxRedirects: 5 },
+  );
+  const $ = cheerio.load(data);
+  return (
+    $('meta[property="og:image"]').attr("content") ||
+    $('meta[name="twitter:image"]').attr("content") ||
+    null
+  );
 }
 
 async function extractInstagramMeta(url: URL): Promise<RecipeMetadata> {
   const fallbackTitle = instagramTitle(url);
+  const shortcode = instagramShortcode(url);
 
-  // Instagram serves full server-rendered HTML (og tags + JSON data) to crawlers.
-  const headers = {
-    "User-Agent":
-      "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
-    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Accept-Encoding": "gzip, deflate, br",
-    Connection: "keep-alive",
-  };
-
-  let thumbnailUrl: string | null = instagramThumbnailUrl(url);
+  let thumbnailUrl: string | null = shortcode
+    ? instagramThumbnailPath(shortcode)
+    : null;
   let caption: string | null = null;
 
   try {
     const { data } = await axios.get(url.href, {
-      headers,
+      headers: INSTAGRAM_CRAWLER_HEADERS,
       timeout: 15000,
       maxRedirects: 5,
     });
     const $ = cheerio.load(data);
 
-    // Only fall back to the expiring og:image when there was no shortcode to
-    // build a stable /media/ URL from (e.g. a bare profile link).
+    // Profile-level links have no shortcode to proxy, so fall back to the raw
+    // og:image — it renders cross-origin, it just won't survive its expiry.
     thumbnailUrl ||=
       $('meta[property="og:image"]').attr("content") ||
       $('meta[name="twitter:image"]').attr("content") ||
@@ -198,7 +217,7 @@ async function extractInstagramMeta(url: URL): Promise<RecipeMetadata> {
     const captionMatch = ogTitle.match(/on Instagram:\s*"?([\s\S]+)"?\s*$/i);
     caption = captionMatch ? captionMatch[1].trim() : null;
   } catch {
-    // fetch failed — proceed with null thumbnail and fallback title
+    // fetch failed — proceed with fallback title; thumbnail path is still valid
   }
 
   const extracted = await extractMetadataFromCaption(caption, fallbackTitle);

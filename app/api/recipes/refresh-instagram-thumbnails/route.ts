@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { supabaseServer as supabase } from "@/lib/supabase";
-import { instagramThumbnailUrl } from "@/lib/recipeExtractor";
+import {
+  instagramShortcode,
+  instagramThumbnailPath,
+} from "@/lib/recipeExtractor";
 
 export async function POST() {
   const { userId } = await auth();
@@ -23,13 +26,13 @@ export async function POST() {
   let failed = 0;
 
   for (const recipe of recipes ?? []) {
-    let thumbnailUrl: string | null = null;
+    let shortcode: string | null = null;
     try {
-      thumbnailUrl = instagramThumbnailUrl(new URL(recipe.url));
+      shortcode = instagramShortcode(new URL(recipe.url));
     } catch {
       // unparseable url
     }
-    if (!thumbnailUrl) {
+    if (!shortcode) {
       failed++;
       continue;
     }
@@ -37,7 +40,7 @@ export async function POST() {
     const { error: updateError } = await supabase
       .from("recipes")
       .update({
-        thumbnail_url: thumbnailUrl,
+        thumbnail_url: instagramThumbnailPath(shortcode),
         updated_at: new Date().toISOString(),
       })
       .eq("id", recipe.id);
