@@ -1,0 +1,31 @@
+.iconBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.icon {
+  width: 22px;
+  height: 22px;
+  display: block;
+  /* The badge sits on arbitrary photography — keep the mark legible on a
+     light thumbnail without boxing it in a chip. */
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+}
+
+/* The pre-existing pill, kept for sources with no recognizable mark. */
+.textPill {
+  display: inline-flex;
+  align-items: center;
+  background: var(--accent);
+  color: var(--primary);
+  border: 0.5px solid white;
+  padding: 0.175rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: var(--font-sans);
+}

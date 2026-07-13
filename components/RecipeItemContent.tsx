@@ -5,7 +5,7 @@ import { useRef, useState, type MouseEvent } from "react";
 import { Recipe } from "@/lib/types";
 import styles from "./RecipeList.module.css";
 import RecipeThumbnail from "./RecipeThumbnail";
-import { isInstagramUrl, isYouTubeUrl } from "@/lib/recipeExtractor";
+import SourceBadge from "./SourceBadge";
 
 interface RecipeItemContentProps {
   recipe: Recipe;
@@ -37,20 +37,6 @@ export function RecipeItemContent({
     }
   };
 
-  const getSourceBadge = () => {
-    try {
-      const url = new URL(recipe.url);
-      if (isYouTubeUrl(url)) {
-        return "YouTube";
-      } else if (isInstagramUrl(url)) {
-        return "Instagram";
-      }
-      return "Blog";
-    } catch {
-      return "Blog";
-    }
-  };
-
   return (
     <>
       {recipe.thumbnail_url && (
@@ -66,7 +52,7 @@ export function RecipeItemContent({
             className={`${styles.thumbnail} ${styles.thumbnailList}`}
           />
           {viewMode !== "list" && (
-            <span className={styles.sourceBadge}>{getSourceBadge()}</span>
+            <SourceBadge url={recipe.url} className={styles.sourceBadge} />
           )}
         </div>
       )}
@@ -82,7 +68,7 @@ export function RecipeItemContent({
           {recipe.title}
 
           {viewMode === "list" && (
-            <span className={styles.sourceBadgeList}>{getSourceBadge()}</span>
+            <SourceBadge url={recipe.url} className={styles.sourceBadgeList} />
           )}
         </h3>
         {(recipe.cook_time || recipe.servings) && (
