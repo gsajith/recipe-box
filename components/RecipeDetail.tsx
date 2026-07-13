@@ -15,6 +15,7 @@ import {
 import { Recipe } from "@/lib/types";
 import styles from "./RecipeDetail.module.css";
 import RecipeThumbnail from "./RecipeThumbnail";
+import { DIFFICULTY_TAGS, MEAL_TYPE_TAGS } from "@/lib/tags";
 
 interface RecipeDetailProps {
   recipe: Recipe;
@@ -86,15 +87,8 @@ export function RecipeDetail({
     recipe.notes,
   ]);
 
-  const mealTypeTags = [
-    "breakfast",
-    "lunch",
-    "dinner",
-    "dessert",
-    "snack",
-    "ingredient",
-  ];
-  const difficultyTags = ["easy", "medium", "hard"];
+  const mealTypeTags = MEAL_TYPE_TAGS;
+  const difficultyTags = DIFFICULTY_TAGS;
 
   const applyTagUpdate = async (updatedTags: string[]) => {
     setTags(updatedTags);

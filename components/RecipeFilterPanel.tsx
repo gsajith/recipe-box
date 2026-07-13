@@ -4,7 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import { LayoutGrid, List } from "lucide-react";
 import { SearchBar } from "@/components/SearchBar";
 import { RecipeList } from "@/components/RecipeList";
+import { ALL, FilterDropdown } from "@/components/FilterDropdown";
 import { isInstagramUrl, isYouTubeUrl } from "@/lib/recipeExtractor";
+import { DIFFICULTY_TAGS, MEAL_TYPE_TAGS, isPromotedTag } from "@/lib/tags";
 import type { Recipe } from "@/lib/types";
 import styles from "./RecipeFilterPanel.module.css";
 
@@ -50,20 +52,32 @@ export function RecipeFilterPanel({
   const [filteredRecipes, setFilteredRecipes] = useState(recipes);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [selectedSource, setSelectedSource] = useState<SourceType | "All">("All");
+  const [selectedSource, setSelectedSource] = useState<SourceType | "All">(ALL);
+  const [selectedMeal, setSelectedMeal] = useState<string>(ALL);
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string>(ALL);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [allTagsShown, setAllTagsShown] = useState(false);
 
+  // Only offer a filter when the library actually spans more than one value —
+  // a lone option filters nothing and just eats space on a phone.
   const presentSources = useMemo(
-    () => SOURCE_ORDER.filter((s) => recipes.some((r) => getSourceType(r.url) === s)),
+    () =>
+      SOURCE_ORDER.filter((s) => recipes.some((r) => getSourceType(r.url) === s)),
     [recipes],
   );
-  const sourceOptions = ["All", ...presentSources] as const;
+  const presentMeals = useMemo(
+    () => MEAL_TYPE_TAGS.filter((t) => recipes.some((r) => r.tags?.includes(t))),
+    [recipes],
+  );
+  const presentDifficulties = useMemo(
+    () => DIFFICULTY_TAGS.filter((t) => recipes.some((r) => r.tags?.includes(t))),
+    [recipes],
+  );
 
-  // Re-filter whenever recipes, tags, or source selection change
+  // Re-filter whenever recipes or any filter selection change
   useEffect(() => {
     filterRecipes(recipes, searchQuery);
-  }, [recipes, selectedTags, selectedSource]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [recipes, selectedTags, selectedSource, selectedMeal, selectedDifficulty]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function filterRecipes(recipesList: Recipe[], query: string) {
     let filtered = recipesList;
@@ -80,8 +94,14 @@ export function RecipeFilterPanel({
         selectedTags.every((t) => r.tags?.includes(t)),
       );
     }
-    if (selectedSource !== "All") {
+    if (selectedSource !== ALL) {
       filtered = filtered.filter((r) => getSourceType(r.url) === selectedSource);
+    }
+    if (selectedMeal !== ALL) {
+      filtered = filtered.filter((r) => r.tags?.includes(selectedMeal));
+    }
+    if (selectedDifficulty !== ALL) {
+      filtered = filtered.filter((r) => r.tags?.includes(selectedDifficulty));
     }
     setFilteredRecipes(filtered);
   }
@@ -97,18 +117,39 @@ export function RecipeFilterPanel({
     );
   }
 
-  function getAvailableTags(): Array<[string, number]> {
+  function clearAllFilters() {
+    setSelectedSource(ALL);
+    setSelectedMeal(ALL);
+    setSelectedDifficulty(ALL);
+    setSelectedTags([]);
+  }
+
+  /** Free-form tags only — meal type and difficulty have their own dropdowns. */
+  function getOtherTags(): Array<[string, number]> {
     const map: Record<string, number> = {};
     filteredRecipes.forEach((r) =>
       r.tags?.forEach((t) => {
+        if (isPromotedTag(t)) return;
         map[t] = (map[t] || 0) + 1;
       }),
     );
     return Object.entries(map).sort((a, b) => b[1] - a[1]);
   }
 
-  const availableTags = getAvailableTags();
+  const otherTags = getOtherTags();
   const isInverted = theme === "inverted";
+  const hasActiveFilters =
+    selectedSource !== ALL ||
+    selectedMeal !== ALL ||
+    selectedDifficulty !== ALL ||
+    selectedTags.length > 0;
+  // The leftover-tag box renders on its own, so the row is only worth showing
+  // when it holds a dropdown — or a Clear for filters already applied.
+  const hasAnyDropdown =
+    presentSources.length > 1 ||
+    presentMeals.length > 1 ||
+    presentDifficulties.length > 1;
+  const showFilterRow = hasAnyDropdown || hasActiveFilters;
 
   return (
     <div className={isInverted ? styles.invertedTheme : undefined}>
@@ -137,37 +178,54 @@ export function RecipeFilterPanel({
         {extraControls}
       </div>
 
-      {presentSources.length > 1 && (
-        <div className={styles.sourceFilter}>
-          <div
-            className={styles.sourceFilterTrack}
-            style={{ "--source-count": sourceOptions.length } as React.CSSProperties}>
-            <div
-              className={styles.sourceFilterPill}
-              style={{
-                left: `calc(${sourceOptions.indexOf(selectedSource)} * 100% / ${sourceOptions.length})`,
-                width: `calc(100% / ${sourceOptions.length})`,
-              }}
+      {showFilterRow && (
+        <div className={styles.filterRow}>
+          {presentSources.length > 1 && (
+            <FilterDropdown
+              label="Platform"
+              value={selectedSource}
+              options={presentSources}
+              onChange={(v) => setSelectedSource(v as SourceType | "All")}
+              inverted={isInverted}
             />
-            {sourceOptions.map((source) => (
-              <button
-                key={source}
-                className={`${styles.sourceFilterOption} ${selectedSource === source ? styles.sourceFilterOptionActive : ""}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedSource(source as SourceType | "All");
-                }}>
-                {source}
-              </button>
-            ))}
-          </div>
+          )}
+          {presentMeals.length > 1 && (
+            <FilterDropdown
+              label="Meal"
+              value={selectedMeal}
+              options={presentMeals}
+              onChange={setSelectedMeal}
+              inverted={isInverted}
+            />
+          )}
+          {presentDifficulties.length > 1 && (
+            <FilterDropdown
+              label="Difficulty"
+              value={selectedDifficulty}
+              options={presentDifficulties}
+              onChange={setSelectedDifficulty}
+              inverted={isInverted}
+            />
+          )}
+
+          {hasActiveFilters && (
+            <button
+              type="button"
+              className={styles.clearBtn}
+              onClick={(e) => {
+                e.stopPropagation();
+                clearAllFilters();
+              }}>
+              Clear
+            </button>
+          )}
         </div>
       )}
 
-      {availableTags.length > 0 && (
+      {otherTags.length > 0 && (
         <div className={`${styles.tagsFilter} ${tagsFilterClassName ?? ""}`}>
           <div className={styles.tagsFilterContent}>
-            {availableTags
+            {otherTags
               .filter((_, idx) => allTagsShown || idx < 8)
               .map(([tag]) => (
                 <button
@@ -180,7 +238,7 @@ export function RecipeFilterPanel({
                   {tag}
                 </button>
               ))}
-            {!allTagsShown && availableTags.length > 8 && (
+            {!allTagsShown && otherTags.length > 8 && (
               <button
                 className={`${styles.tagFilterBtn} ${styles.showAllBtn}`}
                 onClick={(e) => {

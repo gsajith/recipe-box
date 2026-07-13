@@ -44,56 +44,43 @@
   color: white;
 }
 
-/* ─── Source filter (sliding pill) ───────────────────────────────────────── */
+/* ─── Filter row ──────────────────────────────────────────────────────────── */
 
-.sourceFilter {
-  margin: 0 0 0.75rem 0;
-}
-
-.sourceFilterTrack {
-  position: relative;
+.filterRow {
   display: flex;
-  background: var(--surface-variant);
-  border-radius: var(--radius-full);
-  padding: 3px;
-  border: 1.5px solid var(--border);
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.75rem 0;
+  /* Wraps rather than scrolls: a scrolling row hides controls off the right
+     edge, and it would also clip the dropdown menus (a scroll container clips
+     both axes, not just the one you set). */
+  flex-wrap: wrap;
 }
 
-.sourceFilterPill {
-  position: absolute;
-  top: 3px;
-  bottom: 3px;
-  background: white;
-  border-radius: var(--radius-full);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-  transition: left 0.2s ease;
-  pointer-events: none;
-}
-
-.sourceFilterOption {
-  flex: 1;
-  position: relative;
-  z-index: 1;
+.clearBtn {
+  flex-shrink: 0;
+  padding: 0.4rem 0.625rem;
   background: transparent;
   border: none;
-  border-radius: var(--radius-full);
-  padding: 0.4rem 0.875rem;
-  font-size: 0.85rem;
-  font-weight: 500;
-  font-family: inherit;
   color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-family: inherit;
+  font-weight: 500;
+  text-decoration: underline;
   cursor: pointer;
-  transition: color 0.2s ease;
   white-space: nowrap;
-  text-align: center;
 }
 
-.sourceFilterOption:hover {
-  color: var(--text-primary);
+.clearBtn:hover {
+  color: var(--primary);
 }
 
-.sourceFilterOptionActive {
-  color: var(--text-primary);
+.invertedTheme .clearBtn {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.invertedTheme .clearBtn:hover {
+  color: white;
 }
 
 /* ─── Tags filter ─────────────────────────────────────────────────────────── */
@@ -200,32 +187,6 @@
 
 .invertedTheme .viewToggleBtnActive:hover {
   background: rgba(255, 255, 255, 0.35);
-}
-
-.invertedTheme .sourceFilter {
-  margin: 0;
-}
-
-.invertedTheme .sourceFilterTrack {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.25);
-}
-
-.invertedTheme .sourceFilterPill {
-  background: rgba(255, 255, 255, 0.3);
-  box-shadow: none;
-}
-
-.invertedTheme .sourceFilterOption {
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.invertedTheme .sourceFilterOption:hover {
-  color: white;
-}
-
-.invertedTheme .sourceFilterOptionActive {
-  color: white;
 }
 
 .invertedTheme .tagsFilter {
