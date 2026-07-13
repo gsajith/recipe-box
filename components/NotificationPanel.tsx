@@ -5,6 +5,7 @@ import { Bell, X, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import type { FeedItem } from "@/lib/types";
 import styles from "./NotificationPanel.module.css";
+import RecipeThumbnail from "./RecipeThumbnail";
 
 function getHostname(url: string) {
   try {
@@ -217,7 +218,7 @@ export function NotificationPanel() {
                         window.open(item.url, "_blank", "noopener,noreferrer")
                       }>
                       {item.thumbnail_url ? (
-                        <img
+                        <RecipeThumbnail
                           src={item.thumbnail_url}
                           alt={item.title}
                           className={styles.thumb}

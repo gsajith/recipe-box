@@ -4,6 +4,7 @@ import { Trash2, Clock, Users } from "lucide-react";
 import { useRef, useState, type MouseEvent } from "react";
 import { Recipe } from "@/lib/types";
 import styles from "./RecipeList.module.css";
+import RecipeThumbnail from "./RecipeThumbnail";
 import { isInstagramUrl, isYouTubeUrl } from "@/lib/recipeExtractor";
 
 interface RecipeItemContentProps {
@@ -59,7 +60,7 @@ export function RecipeItemContent({
               ? styles.thumbnailListWrapper
               : styles.thumbnailWrapper
           }>
-          <img
+          <RecipeThumbnail
             src={recipe.thumbnail_url}
             alt={recipe.title}
             className={`${styles.thumbnail} ${styles.thumbnailList}`}

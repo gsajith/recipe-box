@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Clock, Users, ExternalLink } from "lucide-react";
 import { supabaseServer as supabase } from "@/lib/supabase";
 import { AppHeader } from "@/components/AppHeader";
+import RecipeThumbnail from "@/components/RecipeThumbnail";
 import { SaveButton } from "./SaveButton";
 import styles from "./page.module.css";
 
@@ -130,7 +131,7 @@ export default async function SharePage({
         <div className={styles.card}>
           {recipe.thumbnail_url && (
             <div className={styles.cardImage}>
-              <img src={recipe.thumbnail_url} alt={recipe.title} />
+              <RecipeThumbnail src={recipe.thumbnail_url} alt={recipe.title} />
             </div>
           )}
 

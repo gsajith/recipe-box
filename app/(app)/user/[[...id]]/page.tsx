@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import { FollowButton } from "@/components/FollowButton";
 import { RecipeFilterPanel } from "@/components/RecipeFilterPanel";
+import RecipeThumbnail from "@/components/RecipeThumbnail";
 import styles from "./page.module.css";
 import recipeStyles from "@/components/RecipeList.module.css";
 import type { Recipe } from "@/lib/types";
@@ -291,7 +292,7 @@ export default function ProfilePage() {
                       } as React.CSSProperties
                     }>
                     {recipe.thumbnail_url ? (
-                      <img
+                      <RecipeThumbnail
                         src={recipe.thumbnail_url}
                         alt={recipe.title}
                         className={styles.fanThumb}

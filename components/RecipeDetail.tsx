@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Recipe } from "@/lib/types";
 import styles from "./RecipeDetail.module.css";
+import RecipeThumbnail from "./RecipeThumbnail";
 
 interface RecipeDetailProps {
   recipe: Recipe;
@@ -197,7 +198,7 @@ export function RecipeDetail({
 
         <div className={styles.header}>
           {recipe.thumbnail_url && (
-            <img
+            <RecipeThumbnail
               src={recipe.thumbnail_url}
               alt={recipe.title}
               className={styles.headerImage}

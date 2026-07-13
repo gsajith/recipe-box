@@ -2,7 +2,6 @@ import { ImageResponse } from "next/og";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { supabaseServer as supabase } from "@/lib/supabase";
-import { fetchInstagramOgImage } from "@/lib/recipeExtractor";
 
 export const size = {
   width: 1200,
@@ -14,19 +13,16 @@ export const contentType = "image/png";
 /**
  * Instagram thumbnails are stored as same-origin proxy paths so the browser can
  * render them. ImageResponse fetches server-side instead, where the CDN's
- * cross-origin policy doesn't apply — so resolve straight to Instagram rather
- * than making the app call back into itself over the network.
+ * cross-origin policy doesn't apply — so point straight at Instagram's cover
+ * frame rather than making the app call back into itself over the network.
  */
-async function resolveThumbnail(thumbnailUrl: string | null) {
+function resolveThumbnail(thumbnailUrl: string | null) {
   const shortcode = thumbnailUrl?.match(/^\/api\/ig-thumb\/([\w-]+)$/)?.[1];
   if (!shortcode) return thumbnailUrl;
 
-  try {
-    return await fetchInstagramOgImage(shortcode);
-  } catch {
-    // fall back to the thumbnail-less layout rather than failing the whole card
-    return null;
-  }
+  // Same frame /api/ig-thumb serves, and like it, free of the play-button
+  // overlay that og:image composites in.
+  return `https://www.instagram.com/p/${shortcode}/media/?size=l`;
 }
 
 export default async function Image({
@@ -54,7 +50,7 @@ export default async function Image({
   ]);
 
   const title = recipe?.title ?? "A shared recipe";
-  const thumbnail = await resolveThumbnail(recipe?.thumbnail_url ?? null);
+  const thumbnail = resolveThumbnail(recipe?.thumbnail_url ?? null);
   const username = user?.username ? `@${user?.username}` : "A user";
 
   return new ImageResponse(

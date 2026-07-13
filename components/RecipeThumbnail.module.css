@@ -1,0 +1,50 @@
+/*
+ * The skeleton is the <img>'s own background, visible until the bitmap paints.
+ * Selectors carry [data-state] so they outrank the plain .thumbnail rules the
+ * call sites already define, whatever order the bundle emits them in.
+ */
+.thumbnail[data-state] {
+  background-color: var(--surface-variant);
+}
+
+.thumbnail[data-state="loading"] {
+  animation: thumbnailPulse 1.2s ease infinite;
+}
+
+.thumbnail[data-state="loaded"] {
+  animation: thumbnailFadeIn 0.35s ease;
+}
+
+/* A dead image shouldn't pulse forever as if it were still coming. */
+.thumbnail[data-state="error"] {
+  animation: none;
+}
+
+@keyframes thumbnailPulse {
+  0%,
+  100% {
+    background-color: var(--surface-variant);
+  }
+  50% {
+    background-color: color-mix(
+      in srgb,
+      var(--surface-variant) 55%,
+      var(--surface)
+    );
+  }
+}
+
+@keyframes thumbnailFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thumbnail[data-state] {
+    animation: none;
+  }
+}
