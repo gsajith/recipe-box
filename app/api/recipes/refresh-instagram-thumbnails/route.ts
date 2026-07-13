@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { supabaseServer as supabase } from "@/lib/supabase";
-import { extractRecipeMetadata } from "@/lib/recipeExtractor";
+import { instagramThumbnailUrl } from "@/lib/recipeExtractor";
 
 export async function POST() {
   const { userId } = await auth();
@@ -23,19 +23,26 @@ export async function POST() {
   let failed = 0;
 
   for (const recipe of recipes ?? []) {
+    let thumbnailUrl: string | null = null;
     try {
-      const { thumbnailUrl } = await extractRecipeMetadata(recipe.url);
-      if (!thumbnailUrl) { failed++; continue; }
-
-      const { error: updateError } = await supabase
-        .from("recipes")
-        .update({ thumbnail_url: thumbnailUrl, updated_at: new Date().toISOString() })
-        .eq("id", recipe.id);
-
-      updateError ? failed++ : refreshed++;
+      thumbnailUrl = instagramThumbnailUrl(new URL(recipe.url));
     } catch {
-      failed++;
+      // unparseable url
     }
+    if (!thumbnailUrl) {
+      failed++;
+      continue;
+    }
+
+    const { error: updateError } = await supabase
+      .from("recipes")
+      .update({
+        thumbnail_url: thumbnailUrl,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", recipe.id);
+
+    updateError ? failed++ : refreshed++;
   }
 
   return NextResponse.json({ refreshed, failed, total: recipes?.length ?? 0 });

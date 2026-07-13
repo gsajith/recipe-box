@@ -143,6 +143,24 @@ function instagramTitle(url: URL): string {
   return "Instagram Post";
 }
 
+/**
+ * Build a thumbnail URL from the post's shortcode.
+ *
+ * og:image points at a signed scontent.cdninstagram.com URL whose oe/oh params
+ * expire after a few weeks — it loads at save time and 403s later, which is why
+ * stored thumbnails kept going dead. This /media/ endpoint is unsigned and never
+ * expires: Instagram resolves it to a current CDN image on every request. It
+ * accepts the /p/ path for reel and tv shortcodes too.
+ */
+export function instagramThumbnailUrl(url: URL): string | null {
+  const shortcode = url.pathname.match(
+    /^\/(?:p|reel|reels|tv)\/([\w-]+)/,
+  )?.[1];
+  return shortcode
+    ? `https://www.instagram.com/p/${shortcode}/media/?size=l`
+    : null;
+}
+
 async function extractInstagramMeta(url: URL): Promise<RecipeMetadata> {
   const fallbackTitle = instagramTitle(url);
 
@@ -156,7 +174,7 @@ async function extractInstagramMeta(url: URL): Promise<RecipeMetadata> {
     Connection: "keep-alive",
   };
 
-  let thumbnailUrl: string | null = null;
+  let thumbnailUrl: string | null = instagramThumbnailUrl(url);
   let caption: string | null = null;
 
   try {
@@ -167,7 +185,9 @@ async function extractInstagramMeta(url: URL): Promise<RecipeMetadata> {
     });
     const $ = cheerio.load(data);
 
-    thumbnailUrl =
+    // Only fall back to the expiring og:image when there was no shortcode to
+    // build a stable /media/ URL from (e.g. a bare profile link).
+    thumbnailUrl ||=
       $('meta[property="og:image"]').attr("content") ||
       $('meta[name="twitter:image"]').attr("content") ||
       null;
