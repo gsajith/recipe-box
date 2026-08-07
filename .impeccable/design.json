@@ -1,0 +1,247 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-07T00:00:00Z",
+  "title": "Design System: RecipeBox",
+  "extensions": {
+    "colorMeta": {
+      "cream": {
+        "role": "neutral",
+        "displayName": "Cream",
+        "canonical": "oklch(0.973 0.012 92)",
+        "tonalRamp": ["oklch(0.20 0.008 92)", "oklch(0.33 0.010 92)", "oklch(0.46 0.012 92)", "oklch(0.59 0.012 92)", "oklch(0.72 0.012 92)", "oklch(0.85 0.012 92)", "oklch(0.93 0.012 92)", "oklch(0.973 0.012 92)"]
+      },
+      "surface-white": {
+        "role": "neutral",
+        "displayName": "Surface White",
+        "canonical": "oklch(1 0 0)",
+        "tonalRamp": ["oklch(0.20 0 0)", "oklch(0.33 0 0)", "oklch(0.46 0 0)", "oklch(0.59 0 0)", "oklch(0.72 0 0)", "oklch(0.85 0 0)", "oklch(0.94 0 0)", "oklch(1 0 0)"]
+      },
+      "oat": {
+        "role": "neutral",
+        "displayName": "Oat",
+        "canonical": "oklch(0.930 0.017 88)",
+        "tonalRamp": ["oklch(0.20 0.010 88)", "oklch(0.32 0.014 88)", "oklch(0.45 0.017 88)", "oklch(0.58 0.017 88)", "oklch(0.71 0.017 88)", "oklch(0.83 0.017 88)", "oklch(0.93 0.017 88)", "oklch(0.97 0.010 88)"]
+      },
+      "enamel-green": {
+        "role": "primary",
+        "displayName": "Enamel Green",
+        "canonical": "oklch(0.360 0.055 158)",
+        "tonalRamp": ["oklch(0.15 0.030 158)", "oklch(0.22 0.042 158)", "oklch(0.29 0.050 158)", "oklch(0.36 0.055 158)", "oklch(0.48 0.055 158)", "oklch(0.62 0.048 158)", "oklch(0.78 0.032 158)", "oklch(0.93 0.015 158)"]
+      },
+      "enamel-green-deep": {
+        "role": "primary",
+        "displayName": "Enamel Green Deep",
+        "canonical": "oklch(0.230 0.038 158)",
+        "tonalRamp": ["oklch(0.15 0.030 158)", "oklch(0.23 0.038 158)", "oklch(0.31 0.048 158)", "oklch(0.40 0.054 158)", "oklch(0.52 0.052 158)", "oklch(0.66 0.044 158)", "oklch(0.81 0.028 158)", "oklch(0.94 0.012 158)"]
+      },
+      "terracotta": {
+        "role": "secondary",
+        "displayName": "Terracotta",
+        "canonical": "oklch(0.620 0.115 45)",
+        "tonalRamp": ["oklch(0.20 0.050 45)", "oklch(0.30 0.075 45)", "oklch(0.41 0.095 45)", "oklch(0.51 0.108 45)", "oklch(0.62 0.115 45)", "oklch(0.73 0.095 45)", "oklch(0.84 0.060 45)", "oklch(0.94 0.025 45)"]
+      },
+      "terracotta-deep": {
+        "role": "secondary",
+        "displayName": "Terracotta Deep",
+        "canonical": "oklch(0.510 0.108 42)",
+        "tonalRamp": ["oklch(0.18 0.045 42)", "oklch(0.27 0.070 42)", "oklch(0.37 0.092 42)", "oklch(0.51 0.108 42)", "oklch(0.62 0.105 42)", "oklch(0.74 0.085 42)", "oklch(0.85 0.055 42)", "oklch(0.94 0.022 42)"]
+      },
+      "butter-yellow": {
+        "role": "tertiary",
+        "displayName": "Butter Yellow",
+        "canonical": "oklch(0.840 0.145 90)",
+        "tonalRamp": ["oklch(0.25 0.050 90)", "oklch(0.38 0.080 90)", "oklch(0.50 0.105 90)", "oklch(0.62 0.125 90)", "oklch(0.73 0.140 90)", "oklch(0.84 0.145 90)", "oklch(0.91 0.090 90)", "oklch(0.96 0.040 90)"]
+      },
+      "chili-red": {
+        "role": "utility",
+        "displayName": "Chili Red",
+        "canonical": "oklch(0.560 0.155 32)",
+        "tonalRamp": ["oklch(0.20 0.060 32)", "oklch(0.29 0.095 32)", "oklch(0.38 0.125 32)", "oklch(0.47 0.145 32)", "oklch(0.56 0.155 32)", "oklch(0.69 0.130 32)", "oklch(0.82 0.080 32)", "oklch(0.94 0.030 32)"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(0.210 0 0)",
+        "tonalRamp": ["oklch(0.12 0 0)", "oklch(0.21 0 0)", "oklch(0.33 0 0)", "oklch(0.45 0 0)", "oklch(0.58 0 0)", "oklch(0.72 0 0)", "oklch(0.85 0 0)", "oklch(0.95 0 0)"]
+      },
+      "clay-grey": {
+        "role": "neutral",
+        "displayName": "Clay Grey",
+        "canonical": "oklch(0.460 0.021 70)",
+        "tonalRamp": ["oklch(0.16 0.012 70)", "oklch(0.25 0.016 70)", "oklch(0.35 0.019 70)", "oklch(0.46 0.021 70)", "oklch(0.58 0.021 70)", "oklch(0.71 0.019 70)", "oklch(0.84 0.014 70)", "oklch(0.95 0.008 70)"]
+      },
+      "parchment-line": {
+        "role": "neutral",
+        "displayName": "Parchment Line",
+        "canonical": "oklch(0.870 0.019 85)",
+        "tonalRamp": ["oklch(0.19 0.010 85)", "oklch(0.30 0.014 85)", "oklch(0.42 0.018 85)", "oklch(0.54 0.019 85)", "oklch(0.66 0.019 85)", "oklch(0.77 0.019 85)", "oklch(0.87 0.019 85)", "oklch(0.95 0.010 85)"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Landing hero only. Third line runs italic in butter yellow — the most identity-carrying type in the product." },
+      "headline": { "displayName": "Headline", "purpose": "Landing section closers and the italic profile display name. App section titles sit at the low end (2.25rem / 700)." },
+      "title": { "displayName": "Title", "purpose": "Recipe card titles, feature headings, panel and settings section titles. Two-line clamp on grid cards, one line in list rows." },
+      "body": { "displayName": "Body", "purpose": "Interface prose and input text. Landing prose opens to 1.75 line-height at a 480px measure." },
+      "label": { "displayName": "Label", "purpose": "Uppercase section labels (NOTES, tag suggestion groups) and the landing eyebrow at 0.7rem / 0.1em in terracotta." }
+    },
+    "shadows": [
+      { "name": "resting", "value": "0 1px 3px 0 rgb(0 0 0 / 0.07)", "purpose": "Cards, primary buttons, menu triggers, notification bell — separation from the cream ground." },
+      { "name": "raised", "value": "0 4px 16px -2px rgb(0 0 0 / 0.11)", "purpose": "Hover state for buttons and triggers; resting state for icon buttons floating over photography." },
+      { "name": "lifted", "value": "0 16px 32px -4px rgb(0 0 0 / 0.14)", "purpose": "Card hover, modals, the profile avatar ring. Top of the scale." },
+      { "name": "terracotta-glow", "value": "0 4px 24px rgba(200, 108, 68, 0.45)", "purpose": "Landing CTA and share-page save button only. Colored shadow is a marketing device, not an app one." },
+      { "name": "terracotta-glow-hover", "value": "0 8px 32px rgba(200, 108, 68, 0.55)", "purpose": "Hover partner to terracotta-glow." },
+      { "name": "sheet-left", "value": "-4px 0 24px rgba(0, 0, 0, 0.08)", "purpose": "Notification panel's left edge as it slides in from the right." },
+      { "name": "float-banner", "value": "0 8px 32px rgba(0, 0, 0, 0.22)", "purpose": "The clipboard save banner floating above the page." },
+      { "name": "menu", "value": "0 6px 20px rgba(0, 0, 0, 0.12)", "purpose": "Portalled filter dropdown menus." },
+      { "name": "badge-mark", "value": "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35))", "purpose": "Source badge platform marks, so they stay legible on arbitrary photography without a chip around them." },
+      { "name": "ring-focus", "value": "0 0 0 3px rgb(35 75 57 / 0.1)", "purpose": "Focus ring on every field, paired with a green border shift. Tokenized as --ring-focus so it cannot drift from --primary." }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Card hover (0.25s), notification panel slide (0.22s), profile expand cascade (0.38s)." },
+      { "name": "ease-spring", "value": "cubic-bezier(0.34, 1.26, 0.64, 1)", "purpose": "The profile recipe fan's card entrance — the only overshoot in the system." },
+      { "name": "duration-state", "value": "0.2s ease", "purpose": "Default for buttons, links, borders, and color transitions." },
+      { "name": "duration-micro", "value": "0.15s ease", "purpose": "Row hovers, menu item hovers, background-only changes." },
+      { "name": "stagger-fan", "value": "75ms", "purpose": "Per-card delay in the profile recipe fan." },
+      { "name": "lift-card", "value": "translateY(-4px)", "purpose": "Card hover rise (The Counter Rule)." },
+      { "name": "lift-button", "value": "translateY(-1px)", "purpose": "Button hover rise; -2px on the landing CTA." },
+      { "name": "pulse-destructive", "value": "scale(1) → scale(1.08) → scale(1) over 0.6s ease", "purpose": "Delete button arming its confirm state." }
+    ],
+    "breakpoints": [
+      { "name": "xs", "value": "400px" },
+      { "name": "sm", "value": "480px" },
+      { "name": "control-stack", "value": "500px" },
+      { "name": "md", "value": "640px" },
+      { "name": "profile-restack", "value": "740px" },
+      { "name": "lg", "value": "770px" },
+      { "name": "container-max", "value": "1060px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one action that moves the user forward. One per view.",
+      "html": "<button class=\"ds-btn-primary\">Save recipe</button>",
+      "css": ".ds-btn-primary { background: var(--orange, #C86C44); color: #fff; border: none; border-radius: 9999px; padding: 0.875rem 1.75rem; font-family: var(--font-sans), 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 700; cursor: pointer; box-shadow: 0 1px 3px 0 rgba(0,0,0,0.07); transition: all 0.2s ease; } .ds-btn-primary:hover { background: var(--orange-dark, #A14F34); box-shadow: 0 4px 16px -2px rgba(0,0,0,0.11); transform: translateY(-1px); } .ds-btn-primary:active { transform: translateY(0); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(35,75,57,0.28); } .ds-btn-primary:disabled { background: var(--surface-variant, #EEE8DC); color: var(--text-secondary, #6B6055); cursor: not-allowed; box-shadow: none; transform: none; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "The ghost pill that sits beside every primary. Cancel, dismiss, step back.",
+      "html": "<button class=\"ds-btn-secondary\">Cancel</button>",
+      "css": ".ds-btn-secondary { background: transparent; color: var(--text-secondary, #6B6055); border: 1.5px solid var(--border, #DDD6CA); border-radius: 9999px; padding: 0.875rem 1.75rem; font-family: var(--font-sans), 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; } .ds-btn-secondary:hover { border-color: var(--text-primary, #1A1A1A); color: var(--text-primary, #1A1A1A); } .ds-btn-secondary:focus-visible { outline: none; border-color: var(--primary, #234b39); box-shadow: 0 0 0 3px rgba(35,75,57,0.15); }"
+    },
+    {
+      "name": "Icon Button",
+      "kind": "button",
+      "refersTo": "button-icon",
+      "description": "38px green circle for close, share, and other single-icon actions. Scales up on hover.",
+      "html": "<button class=\"ds-btn-icon\" aria-label=\"Close\"><svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M18 6 6 18M6 6l12 12\"/></svg></button>",
+      "css": ".ds-btn-icon { display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; background: var(--primary, #234b39); color: #fff; border: none; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 16px -2px rgba(0,0,0,0.11); transition: all 0.2s ease; } .ds-btn-icon:hover { background: var(--primary-dark, #132A1F); transform: scale(1.1); } .ds-btn-icon:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(35,75,57,0.3); }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "12px-radius field on white with a 1.5px parchment border and a soft green focus ring.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Paste a recipe URL\" />",
+      "css": ".ds-input { width: 100%; padding: 0.875rem 1rem; background: var(--surface, #fff); color: var(--text-primary, #1A1A1A); border: 1.5px solid var(--border, #DDD6CA); border-radius: 12px; font-family: var(--font-sans), 'DM Sans', sans-serif; font-size: 0.95rem; transition: all 0.2s ease; box-sizing: border-box; } .ds-input::placeholder { color: var(--text-secondary, #6B6055); } .ds-input:focus { outline: none; border-color: var(--primary, #234b39); box-shadow: var(--ring-focus, 0 0 0 3px rgb(35 75 57 / 0.1)); } .ds-input:disabled { background: var(--surface-variant, #EEE8DC); opacity: 0.6; cursor: not-allowed; }"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "The one input that takes pill radius, with the magnifier inset at 2.75rem.",
+      "html": "<div class=\"ds-search\"><svg class=\"ds-search-icon\" viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/></svg><input class=\"ds-search-input\" type=\"search\" placeholder=\"Search recipes\" /></div>",
+      "css": ".ds-search { position: relative; width: 100%; } .ds-search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary, #6B6055); pointer-events: none; } .ds-search-input { width: 100%; padding: 0.75rem 1rem 0.75rem 2.75rem; background: var(--surface, #fff); color: var(--text-primary, #1A1A1A); border: 1.5px solid var(--border, #DDD6CA); border-radius: 9999px; font-family: var(--font-sans), 'DM Sans', sans-serif; font-size: 0.95rem; transition: all 0.2s ease; box-sizing: border-box; } .ds-search-input::placeholder { color: var(--text-secondary, #6B6055); } .ds-search-input:focus { outline: none; border-color: var(--primary, #234b39); box-shadow: var(--ring-focus, 0 0 0 3px rgb(35 75 57 / 0.1)); }"
+    },
+    {
+      "name": "Filter Chip",
+      "kind": "chip",
+      "refersTo": "chip-filter",
+      "description": "Oat pill at rest, solid green when selected. Wraps to a second line, never scrolls.",
+      "html": "<div class=\"ds-chip-row\"><button class=\"ds-chip-filter\">Weeknight</button><button class=\"ds-chip-filter ds-chip-filter--active\">Dessert</button><button class=\"ds-chip-filter ds-chip-filter--all\">Show all</button></div>",
+      "css": ".ds-chip-row { display: flex; flex-wrap: wrap; gap: 0.5rem; } .ds-chip-filter { padding: 0.4rem 0.875rem; background: var(--surface-variant, #EEE8DC); color: var(--text-secondary, #6B6055); border: 1.5px solid var(--border, #DDD6CA); border-radius: 9999px; font-family: var(--font-sans), 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.2s ease; text-transform: capitalize; } .ds-chip-filter:hover { border-color: var(--primary, #234b39); color: var(--primary, #234b39); } .ds-chip-filter:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(35,75,57,0.18); } .ds-chip-filter--active { background: var(--primary, #234b39); color: #fff; border-color: var(--primary, #234b39); } .ds-chip-filter--active:hover { background: var(--primary-dark, #132A1F); border-color: var(--primary-dark, #132A1F); color: #fff; } .ds-chip-filter--all { border-style: dashed; }"
+    },
+    {
+      "name": "Recipe Tag",
+      "kind": "chip",
+      "refersTo": "chip-tag",
+      "description": "Filled means the tag is applied and removable; outlined means it is being displayed read-only on a card.",
+      "html": "<div class=\"ds-chip-row\"><span class=\"ds-tag\">weeknight<button class=\"ds-tag-x\" aria-label=\"Remove tag\">&times;</button></span><span class=\"ds-tag-outline\">30 minutes</span></div>",
+      "css": ".ds-tag { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.375rem 0.875rem; background: var(--primary, #234b39); color: #fff; border-radius: 9999px; font-family: var(--font-sans), 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600; } .ds-tag-x { background: none; border: none; padding: 0; color: rgba(255,255,255,0.65); font-size: 1.1rem; line-height: 1; cursor: pointer; transition: color 0.2s; } .ds-tag-x:hover { color: #fff; } .ds-tag-outline { display: inline-flex; align-items: center; padding: 0.2rem 0.625rem; background: transparent; color: var(--primary, #234b39); border: 1.5px solid var(--primary, #234b39); border-radius: 9999px; font-family: var(--font-sans), 'DM Sans', sans-serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.01em; }"
+    },
+    {
+      "name": "Recipe Card",
+      "kind": "card",
+      "refersTo": "card-recipe",
+      "description": "The system's primary object: cover image, source mark, serif title, meta row, outlined tags. Lifts 4px toward the cursor.",
+      "html": "<article class=\"ds-card\"><div class=\"ds-card-media\"><span class=\"ds-card-badge\"><svg viewBox=\"0 0 24 24\" width=\"22\" height=\"22\"><rect width=\"24\" height=\"24\" rx=\"6\" fill=\"#C4302B\"/><path d=\"M10 8.5v7l6-3.5z\" fill=\"#fff\"/></svg></span></div><div class=\"ds-card-body\"><h3 class=\"ds-card-title\">Charred Broccoli with Anchovy Butter</h3><div class=\"ds-card-meta\"><span>35 min</span><span class=\"ds-card-dot\">&middot;</span><span>Serves 4</span></div><div class=\"ds-card-tags\"><span class=\"ds-tag-outline\">weeknight</span><span class=\"ds-tag-outline\">vegetable</span></div></div></article>",
+      "css": ".ds-card { display: flex; flex-direction: column; width: 280px; background: var(--surface, #fff); border: 1.5px solid var(--border, #DDD6CA); border-radius: 20px; overflow: hidden; cursor: pointer; box-shadow: 0 1px 3px 0 rgba(0,0,0,0.07); transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); } .ds-card:hover { transform: translateY(-4px); box-shadow: 0 16px 32px -4px rgba(0,0,0,0.14); border-color: var(--primary, #234b39); } .ds-card-media { position: relative; height: 200px; background: linear-gradient(135deg, #EEE8DC 0%, #DDD6CA 60%, #C8BFAE 100%); } .ds-card-badge { position: absolute; top: 0.5rem; left: 0.5rem; line-height: 0; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.35)); } .ds-card-body { display: flex; flex-direction: column; padding: 1.25rem; } .ds-card-title { margin: 0 0 0.75rem 0; font-family: var(--font-serif), Georgia, serif; font-size: 1.2rem; font-weight: 700; line-height: 1.35; color: var(--text-primary, #1A1A1A); } .ds-card-meta { display: flex; align-items: center; gap: 0.375rem; font-family: var(--font-sans), 'DM Sans', sans-serif; font-size: 0.75rem; font-weight: 500; color: var(--text-secondary, #6B6055); } .ds-card-dot { color: var(--border, #DDD6CA); } .ds-card-tags { display: flex; flex-wrap: wrap; gap: 0.375rem; margin-top: 0.75rem; }"
+    },
+    {
+      "name": "Notification Bell",
+      "kind": "nav",
+      "refersTo": "badge-notification",
+      "description": "38px circle in the header carrying a terracotta count ringed in the page cream so it reads against the border beneath it.",
+      "html": "<button class=\"ds-bell\" aria-label=\"Notifications\"><svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M10.3 21a1.94 1.94 0 0 0 3.4 0\"/><path d=\"M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9\"/></svg><span class=\"ds-bell-badge\">3</span></button>",
+      "css": ".ds-bell { position: relative; display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; background: var(--surface, #fff); color: var(--text-secondary, #6B6055); border: 1.5px solid var(--border, #DDD6CA); border-radius: 50%; cursor: pointer; box-shadow: 0 1px 3px 0 rgba(0,0,0,0.07); transition: all 0.2s ease; } .ds-bell:hover { border-color: var(--primary, #234b39); color: var(--primary, #234b39); box-shadow: 0 4px 16px -2px rgba(0,0,0,0.11); } .ds-bell:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(35,75,57,0.22); } .ds-bell-badge { position: absolute; top: -4px; right: -4px; display: flex; align-items: center; justify-content: center; min-width: 17px; height: 17px; padding: 0 4px; background: var(--orange, #C86C44); color: #fff; border: 1.5px solid var(--background, #FAF7EF); border-radius: 999px; font-family: var(--font-sans), 'DM Sans', sans-serif; font-size: 0.65rem; font-weight: 700; line-height: 1; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Enamel Kitchen",
+    "overview": "Deep green enamelware set against cream, trimmed in terracotta. Every surface in RecipeBox behaves like a well-made kitchen object rather than a software panel: it has an edge you can see (a 1.5px border, never a hairline), a weight you can feel (it lifts toward you when you reach for it), and a finish that survives use. The ground is warm paper-cream (#FAF7EF), never white and never grey — white is reserved for the cards that sit on it, which is what makes a card read as an object placed on a counter rather than a region of the page.\n\nThe type carries the warmth the palette establishes. Playfair Display names things — recipe titles, page headings, the wordmark, a person's display name — with real serif authority at heavy weights and tight tracking. DM Sans says everything about those things: meta, labels, buttons, body. That split is the system's most consistent rule and the reason a recipe card reads as a clipping rather than a database row.\n\nThe product exists to rescue recipes from ad-choked blog pages and lost Instagram saves, so the interface is deliberately the opposite of what it saves from: one column, one action, nothing blinking for attention. It is equally not a generic dashboard. There is no blue, no grey card on a grey background, no Inter. Photography does the loud work; the chrome stays warm, sturdy, and quiet around it.",
+    "keyCharacteristics": [
+      "Warm cream ground with white object-cards, never grey-on-grey",
+      "Deep green for structure and identity; terracotta for the one action that moves you forward",
+      "Playfair Display names things, DM Sans explains them",
+      "Visible 1.5px borders everywhere — the edge is part of the design, not a fallback",
+      "Cards lift 4px toward the cursor; depth is a response, never decoration",
+      "Pill-shaped controls, 12px input fields, 20px content cards, circles for identity",
+      "Below 640px, floating chrome becomes 72%-black blurred pills over photography"
+    ],
+    "rules": [
+      { "name": "The Green House Rule", "body": "Deep green is the house — structure, chrome, identity, selected state. It can cover whole regions (nav, hero, profile slab) and it never asks for a click by itself.", "section": "colors" },
+      { "name": "The One Door Rule", "body": "Terracotta is the door. It appears on the single action that moves the user forward, and it appears once per view. A screen with two terracotta buttons has one too many; demote the lesser one to the ghost pill.", "section": "colors" },
+      { "name": "The Inversion Rule", "body": "On green or terracotta grounds, controls do not switch palettes — they invert into white-alpha tiers: rgba(255,255,255,0.15) fill, rgba(255,255,255,0.3–0.4) border, rgba(255,255,255,0.85) text, solid white when active.", "section": "colors" },
+      { "name": "The Warm Grey Rule", "body": "There is no neutral grey in this system. Every grey is warm (#6B6055, #DDD6CA, #EEE8DC). A cool grey anywhere reads instantly as foreign.", "section": "colors" },
+      { "name": "The Naming Rule", "body": "Playfair sets the names of things — recipe titles, page titles, section headings, a person's display name, the wordmark. DM Sans sets everything the interface says about them. A serif button label or a sans recipe title both break the system immediately.", "section": "typography" },
+      { "name": "The Italic Identity Rule", "body": "Italic Playfair is reserved for identity moments — the wordmark, the hero's emphasized line, a display name, a stat count. Never body text, quotes, or emphasis in prose.", "section": "typography" },
+      { "name": "The Wordmark Rule", "body": "RecipeBox is always set as italic serif with Recipe in terracotta and Box in enamel green, at weight 800 with -0.025em tracking. On green grounds the whole wordmark goes cream. Never one color on cream, never all-caps, never tracked out.", "section": "typography" },
+      { "name": "The 1060 Rule", "body": "Content lives in a 1060px column on cream. Full-bleed color is allowed only for the landing hero, the landing CTA, the notification sheet, and the profile composition — surfaces whose job is atmosphere, not task.", "section": "layout" },
+      { "name": "The Wrap-Never-Scroll Rule", "body": "Filter and control rows wrap to a second line. They never become horizontal scrollers: off-screen controls read as absent, and a scroll container clips the dropdown menus that open from them.", "section": "layout" },
+      { "name": "The Counter Rule", "body": "Cards are objects on a counter. On hover they lift 4px, take the Lifted shadow, and shift their border to enamel green, over 0.25s on cubic-bezier(0.4, 0, 0.2, 1). Buttons lift 1–2px on the same idea. Anything that responds to a pointer moves toward it.", "section": "elevation" },
+      { "name": "The Tonal Recess Rule", "body": "Nothing is pushed back with a shadow. Recessed states — disabled, placeholder, sub-panel, hovered row — drop to oat (#EEE8DC). Inset shadows do not exist in this system.", "section": "elevation" },
+      { "name": "The Full-Bleed Rule", "body": "Below 640px, a modal stops being a card: it sheds its radius, border, and shadow, fills 100dvh, and its overlay becomes solid white rather than a blurred scrim. Floating chrome over photography converts to rgba(0,0,0,0.72) pills with a 6px backdrop blur.", "section": "elevation" },
+      { "name": "The Pill-For-Action Rule", "body": "If it can be pressed, it is a pill. A rounded-rectangle button is off-system.", "section": "shapes" },
+      { "name": "The Visible Edge Rule", "body": "Borders are 1.5px and they are meant to be seen. Do not thin them to 1px for refinement, and do not replace a border with a shadow — in this system the edge is the form.", "section": "shapes" }
+    ],
+    "dos": [
+      "Do put white cards on the cream ground (#FAF7EF). Cream is the page; white means \"object.\"",
+      "Do reserve terracotta for the one action that moves the user forward, and use exactly one per view (The One Door Rule).",
+      "Do set names in Playfair and everything else in DM Sans (The Naming Rule).",
+      "Do keep borders at 1.5px and visible. The edge is the form (The Visible Edge Rule).",
+      "Do express recessed states tonally with oat (#EEE8DC) rather than with inset shadows.",
+      "Do invert controls into white-alpha tiers on green or terracotta grounds instead of introducing a second palette (The Inversion Rule).",
+      "Do move interactive surfaces toward the cursor: 4px for cards, 1–2px for buttons, scale(1.1) for icon circles.",
+      "Do convert floating chrome to rgba(0,0,0,0.72) blurred pills when it sits over photography on mobile.",
+      "Do design every card and row for a missing thumbnail — an oat placeholder that pulses while loading and stops pulsing on error is the shipped behavior, and it is the common case.",
+      "Do make destruction two-step: hover to chili red, click to arm with a pulse, click again to commit.",
+      "Do extend prefers-reduced-motion coverage when adding motion. Only RecipeThumbnail currently honors it; the fan, panel slide, and banner entrance do not."
+    ],
+    "donts": [
+      "Don't introduce a cool grey, a blue, or Inter. That combination is the generic-dashboard look this system is defined against.",
+      "Don't let a surface accumulate competing calls to attention — badges, banners, and promos stacked around content is the recipe-blog clutter the product exists to escape.",
+      "Don't use chili red for anything but destruction. It is not an accent.",
+      "Don't promote butter yellow to a surface color. It appears on the hero italic, the free badge, and the profile plane — that scarcity is what makes it read as highlight.",
+      "Don't give a pressable element a rounded rectangle. Pills for actions, 12px for fields, 20px for content.",
+      "Don't replace a border with a shadow, or thin a 1.5px border to 1px for \"refinement.\"",
+      "Don't bring the profile page's oversized radii, overlapping planes, or fanned deck into task surfaces. Two registers, kept apart.",
+      "Don't spend weight 900 outside the profile composition — it is the signature register's ceiling, not a general emphasis tool.",
+      "Don't hand-write a focus ring. Use var(--ring-focus) so it stays derived from --primary.",
+      "Don't make a control row scroll horizontally; wrap it (The Wrap-Never-Scroll Rule)."
+    ]
+  }
+}
