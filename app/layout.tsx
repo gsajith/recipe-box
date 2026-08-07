@@ -3,10 +3,12 @@ import { Playfair_Display, DM_Sans } from "next/font/google";
 import { Providers } from "./providers";
 import "./globals.css";
 
+// Playfair Display is a variable font (wght 400–900), so no `weight` is passed:
+// the array form is for non-variable families and would pin us to static cuts,
+// which is what left the profile page's 900 declarations resolving to 800.
 const playfairDisplay = Playfair_Display({
   variable: "--font-serif",
   subsets: ["latin"],
-  weight: ["400", "600", "700", "800"],
   style: ["normal", "italic"],
 });
 
