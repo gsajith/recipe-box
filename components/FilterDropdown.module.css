@@ -7,7 +7,9 @@
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.4rem 0.75rem;
+  /* Thumb-sized: the kitchen scene sets a floor above the usual 44px advice. */
+  min-height: 44px;
+  padding: 0.4rem 0.875rem;
   background: var(--surface-variant);
   color: var(--text-secondary);
   border: 1.5px solid var(--border);
@@ -78,7 +80,7 @@
   cursor: pointer;
   text-transform: capitalize;
   /* Comfortable thumb target on touch screens. */
-  min-height: 2.25rem;
+  min-height: 44px;
 }
 
 .option:hover {

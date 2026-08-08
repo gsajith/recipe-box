@@ -11,6 +11,9 @@ interface RecipeListProps {
   onRecipeSelect: (recipe: Recipe) => void;
   onRecipeDelete: (recipeId: string) => Promise<void>;
   viewMode?: "grid" | "list";
+  /** True when a search or filter is narrowing the list — changes the empty state. */
+  isFiltered?: boolean;
+  onClearFilters?: () => void;
 }
 
 export function RecipeList({
@@ -18,6 +21,8 @@ export function RecipeList({
   onRecipeSelect,
   onRecipeDelete,
   viewMode = "grid",
+  isFiltered = false,
+  onClearFilters,
 }: RecipeListProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -31,9 +36,25 @@ export function RecipeList({
   };
 
   if (recipes.length === 0) {
+    // "Nothing saved" and "nothing matches" are different problems, and telling
+    // someone with 84 recipes that they have none is just wrong.
     return (
       <div className={styles.empty}>
-        <p>No recipes saved yet. Add your first recipe!</p>
+        {isFiltered ? (
+          <>
+            <p>No recipes match these filters.</p>
+            {onClearFilters && (
+              <button
+                type="button"
+                className={styles.emptyAction}
+                onClick={onClearFilters}>
+                Clear filters
+              </button>
+            )}
+          </>
+        ) : (
+          <p>No recipes saved yet. Add your first recipe!</p>
+        )}
       </div>
     );
   }
