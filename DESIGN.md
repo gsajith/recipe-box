@@ -170,6 +170,8 @@ A warm, food-adjacent palette: cream and oat for ground, one deep green for ever
 
 **The One Door Rule.** Terracotta is the door. It appears on the single action that moves the user forward, and it appears *once* per view. A screen with two terracotta buttons has one too many; demote the lesser one to the ghost pill.
 
+> **Known AA exception, accepted deliberately.** White label text on terracotta measures **3.69:1** — below the 4.5:1 WCAG AA bar for normal-size text (it clears the 3:1 large-text bar). Measured 2026-08-07 on Add Recipe, Follow, Follow back, and the clipboard Save button. The hue is a brand commitment and takes precedence here; darkening the fill to `--orange-dark` (5.1:1) was considered and declined. Do not "fix" this by shifting the terracotta. Do make sure every terracotta button is also identifiable by shape, position, and label rather than color alone, and prefer large/bold label type where the layout allows.
+
 **The Inversion Rule.** On green or terracotta grounds, controls do not switch palettes — they invert into white-alpha tiers: `rgba(255,255,255,0.15)` fill, `rgba(255,255,255,0.3–0.4)` border, `rgba(255,255,255,0.85)` text, solid white when active. The profile page and the landing nav both run on this; any new surface on a colored ground must too.
 
 **The Warm Grey Rule.** There is no neutral grey in this system. Every grey is warm (`#6B6055`, `#DDD6CA`, `#EEE8DC`). A cool grey anywhere reads instantly as foreign.
