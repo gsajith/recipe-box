@@ -9,6 +9,7 @@ interface RecipeCardViewProps {
   onRecipeSelect: (recipe: Recipe) => void;
   onDelete: (recipeId: string) => Promise<void>;
   deletingId: string | null;
+  tagCounts?: Record<string, number>;
 }
 
 export function RecipeCardView({
@@ -16,6 +17,7 @@ export function RecipeCardView({
   onRecipeSelect,
   onDelete,
   deletingId,
+  tagCounts,
 }: RecipeCardViewProps) {
   return (
     <div className={styles.container}>
@@ -27,6 +29,7 @@ export function RecipeCardView({
               onSelect={() => onRecipeSelect(recipe)}
               onDelete={onDelete}
               deletingId={deletingId}
+              tagCounts={tagCounts}
               viewMode="grid"
             />
           </article>

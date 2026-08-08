@@ -480,3 +480,16 @@
   background: rgba(250, 247, 239, 0.2);
   color: rgba(250, 247, 239, 0.9);
 }
+
+/* Motion is a response here, not information — honour the OS setting. */
+@media (prefers-reduced-motion: reduce) {
+  .clipboardBanner {
+    animation: none;
+    opacity: 1;
+  }
+
+  .clipboardTitleLoading {
+    animation: none;
+    opacity: 1;
+  }
+}

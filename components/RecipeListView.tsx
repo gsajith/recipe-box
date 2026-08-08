@@ -9,6 +9,7 @@ interface RecipeListViewProps {
   onRecipeSelect: (recipe: Recipe) => void;
   onDelete: (recipeId: string) => Promise<void>;
   deletingId: string | null;
+  tagCounts?: Record<string, number>;
 }
 
 export function RecipeListView({
@@ -16,6 +17,7 @@ export function RecipeListView({
   onRecipeSelect,
   onDelete,
   deletingId,
+  tagCounts,
 }: RecipeListViewProps) {
   return (
     <div className={styles.container}>
@@ -29,6 +31,7 @@ export function RecipeListView({
               onSelect={() => onRecipeSelect(recipe)}
               onDelete={onDelete}
               deletingId={deletingId}
+              tagCounts={tagCounts}
               viewMode="list"
             />
           </article>

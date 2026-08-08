@@ -14,6 +14,8 @@ interface RecipeListProps {
   /** True when a search or filter is narrowing the list — changes the empty state. */
   isFiltered?: boolean;
   onClearFilters?: () => void;
+  /** How many recipes carry each tag, for ranking card chips. */
+  tagCounts?: Record<string, number>;
 }
 
 export function RecipeList({
@@ -23,6 +25,7 @@ export function RecipeList({
   viewMode = "grid",
   isFiltered = false,
   onClearFilters,
+  tagCounts,
 }: RecipeListProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -65,6 +68,7 @@ export function RecipeList({
       onRecipeSelect={onRecipeSelect}
       onDelete={handleDelete}
       deletingId={deletingId}
+      tagCounts={tagCounts}
     />
   ) : (
     <RecipeCardView
@@ -72,6 +76,7 @@ export function RecipeList({
       onRecipeSelect={onRecipeSelect}
       onDelete={handleDelete}
       deletingId={deletingId}
+      tagCounts={tagCounts}
     />
   );
 }

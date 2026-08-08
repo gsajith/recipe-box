@@ -1,7 +1,7 @@
 "use client";
 
 import { Trash2, Clock, Users } from "lucide-react";
-import { useRef, useState, type MouseEvent } from "react";
+import { useMemo, useRef, useState, type MouseEvent } from "react";
 import { Recipe } from "@/lib/types";
 import styles from "./RecipeList.module.css";
 import RecipeThumbnail from "./RecipeThumbnail";
@@ -13,6 +13,8 @@ interface RecipeItemContentProps {
   onDelete: (recipeId: string) => Promise<void>;
   deletingId: string | null;
   viewMode: "grid" | "list";
+  /** How many recipes carry each tag, for ranking which two a card shows. */
+  tagCounts?: Record<string, number>;
 }
 
 export function RecipeItemContent({
@@ -21,9 +23,23 @@ export function RecipeItemContent({
   onDelete,
   deletingId,
   viewMode,
+  tagCounts,
 }: RecipeItemContentProps) {
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const deleteTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Grid cards have room for two tags. Showing the first two by array order
+  // meant nearly every card read "dinner · lunch" — the tags that say least
+  // because almost everything carries them. Show the rarest two instead, so
+  // the chips carry the word you'd actually search your memory for.
+  const shownTags = useMemo(() => {
+    const tags = recipe.tags ?? [];
+    if (viewMode === "list") return tags;
+    if (!tagCounts) return tags.slice(0, 2);
+    return [...tags]
+      .sort((a, b) => (tagCounts[a] ?? 0) - (tagCounts[b] ?? 0))
+      .slice(0, 2);
+  }, [recipe.tags, viewMode, tagCounts]);
 
   const handleDelete = (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
@@ -104,15 +120,15 @@ export function RecipeItemContent({
             className={`${styles.tags} ${
               viewMode === "list" ? styles.tagsList : ""
             }`}>
-            {recipe.tags
-              .filter((tag, index) => viewMode === "list" || index < 2)
-              .map((tag) => (
-                <span key={tag} className={styles.tag}>
-                  {tag}
-                </span>
-              ))}
-            {recipe.tags.length > 2 && viewMode !== "list" && (
-              <span className={styles.tag}>+{recipe.tags.length - 2} more</span>
+            {shownTags.map((tag) => (
+              <span key={tag} className={styles.tag}>
+                {tag}
+              </span>
+            ))}
+            {recipe.tags.length > shownTags.length && (
+              <span className={styles.tag}>
+                +{recipe.tags.length - shownTags.length} more
+              </span>
             )}
           </div>
         )}

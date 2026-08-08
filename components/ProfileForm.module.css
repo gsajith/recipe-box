@@ -201,25 +201,33 @@
   color: #2e7d52;
 }
 
+/* Was enamel green at 8px radius with a half-opacity green disabled state —
+   breaking the One Door, Pill-For-Action and oat-disabled rules at once. */
 .submitBtn {
   width: 100%;
+  min-height: 44px;
   margin-top: 0.25rem;
-  padding: 0.625rem 1.25rem;
-  background: var(--primary);
+  padding: 0.75rem 1.5rem;
+  background: var(--orange);
   color: #fff;
   border: none;
-  border-radius: var(--radius-sm);
-  font-size: 0.9375rem;
-  font-weight: 600;
+  border-radius: var(--radius-full);
+  font-size: 0.95rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.15s;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
 }
 
 .submitBtn:hover:not(:disabled) {
-  background: var(--primary-dark);
+  background: var(--orange-dark);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
 .submitBtn:disabled {
-  opacity: 0.5;
+  background: var(--surface-variant);
+  color: var(--text-secondary);
+  box-shadow: none;
   cursor: not-allowed;
 }

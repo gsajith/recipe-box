@@ -1,14 +1,76 @@
 .header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 1rem;
   margin-bottom: 2.5rem;
 }
 
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-inline-end: auto;
+}
+
+.navLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 0.875rem;
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.navLink:hover {
+  background: var(--surface-variant);
+  color: var(--text-primary);
+}
+
+.navLinkActive {
+  background: var(--primary);
+  color: white;
+}
+
+.navLinkActive:hover {
+  background: var(--primary-dark);
+  color: white;
+}
+
+/* No auto margin here — .nav already claims the free space, and two autos
+   would split it and leave the nav floating mid-header. */
 .right {
   display: flex;
   align-items: center;
   gap: 0.625rem;
+}
+
+/* Logo + account controls will not fit beside the nav on a phone, so the nav
+   takes its own row rather than pushing the avatar off the right edge (which
+   body's overflow-x: hidden was quietly swallowing). */
+@media (max-width: 560px) {
+  .header {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .nav {
+    order: 3;
+    width: 100%;
+    margin-inline-end: 0;
+  }
+
+  .right {
+    margin-inline-start: auto;
+  }
+
+  .navLink {
+    padding: 0 0.75rem;
+    font-size: 0.85rem;
+  }
 }
 
 

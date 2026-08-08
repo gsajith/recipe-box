@@ -142,7 +142,11 @@ export default function UsersPage() {
                     </span>
                   </div>
                 </div>
-                {!isMe && (
+                {isMe ? (
+                  // You were listed unmarked between strangers, with no
+                  // indication the row was your own.
+                  <span className={styles.youBadge}>You</span>
+                ) : (
                   <div
                     className={styles.actions}
                     onClick={(e) => e.stopPropagation()}>

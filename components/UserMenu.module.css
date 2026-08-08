@@ -39,6 +39,14 @@
   white-space: nowrap;
 }
 
+/* On the narrowest phones the greeting is the first thing worth dropping —
+   the avatar already identifies the menu. */
+@media (max-width: 420px) {
+  .name {
+    display: none;
+  }
+}
+
 .chevron {
   color: var(--text-secondary);
   flex-shrink: 0;
