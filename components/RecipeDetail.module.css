@@ -259,6 +259,54 @@
   transition: all 0.2s ease;
 }
 
+/* Sits under the door on someone else's recipe. Ghost, not terracotta — the
+   door is still the one primary in this region. */
+.saveToCollectionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  width: 100%;
+  min-height: 48px;
+  margin: -0.5rem 0 1.25rem;
+  padding: 0.625rem 1.25rem;
+  background: transparent;
+  color: var(--primary);
+  border: 1.5px solid var(--primary);
+  border-radius: var(--radius-full);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.saveToCollectionBtn:hover:not(:disabled) {
+  background: var(--primary);
+  color: white;
+}
+
+.saveToCollectionBtnDone {
+  border-color: var(--border);
+  color: var(--text-secondary);
+  cursor: default;
+}
+
+.saveToCollectionBtnDone:hover {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.saveToCollectionBtn:disabled {
+  cursor: default;
+}
+
+.saveError {
+  margin: -0.75rem 0 1rem;
+  color: var(--danger);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
 .openRecipeBtn:hover {
   background: var(--orange-dark);
   box-shadow: var(--shadow-md);

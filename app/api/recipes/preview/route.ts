@@ -14,8 +14,11 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const { title, thumbnailUrl } = await extractRecipeMetadata(url);
-    return NextResponse.json({ title, thumbnailUrl });
+    const { title, thumbnailUrl, pageKind } = await extractRecipeMetadata(url);
+    // pageKind lets the clipboard banner decline to interrupt over a page that
+    // declares itself to be something other than a recipe. Advisory only — the
+    // save endpoint does not consult it, so an explicit paste still works.
+    return NextResponse.json({ title, thumbnailUrl, pageKind });
   } catch {
     return NextResponse.json({ error: "Failed to fetch preview" }, { status: 500 });
   }

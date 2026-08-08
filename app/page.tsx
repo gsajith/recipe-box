@@ -192,11 +192,23 @@ export default function Home() {
     } else {
       fetch(`/api/recipes/preview?url=${encodeURIComponent(clipboardUrl)}`)
         .then((r) => (r.ok ? r.json() : null))
-        .then((data) =>
+        .then((data) => {
+          if (cancelled) return;
+          // The URL check upstream can only refuse our own pages and bare
+          // roots. This is the page itself saying it is a product, a job
+          // posting, a listing — so withdraw the offer rather than interrupt
+          // with it. Anything that says nothing still gets offered: most real
+          // recipes are published without structured data.
+          if (data?.pageKind === "other") {
+            settled = true;
+            lastOfferedUrl.current = clipboardUrl;
+            setClipboardUrl(null);
+            return;
+          }
           land(
             data ? { title: data.title, thumbnailUrl: data.thumbnailUrl } : null,
-          ),
-        )
+          );
+        })
         .catch(() => land(null));
     }
 
@@ -398,6 +410,7 @@ export default function Home() {
             onRecipeSelect={setSelectedRecipe}
             onRecipeDelete={handleDeleteRecipe}
             loading={isFetching}
+            persistState
             extraControls={
               <RecipeForm onSubmit={handleAddRecipe} isLoading={isLoading} />
             }

@@ -2,11 +2,109 @@ import Anthropic from "@anthropic-ai/sdk";
 import axios from "axios";
 import * as cheerio from "cheerio";
 
+/**
+ * What the page says it is, when it says anything at all.
+ *
+ * `unknown` is the honest default and by far the most common answer — plenty of
+ * real recipes are posted on sites that publish no structured data. Only
+ * `other` is a refusal, and only the clipboard banner acts on it: an
+ * unprompted offer has to earn its interruption, while an explicit paste is
+ * the user telling us what they want and is never gated.
+ */
+export type PageKind = "recipe" | "other" | "unknown";
+
 interface RecipeMetadata {
   title: string;
   thumbnailUrl: string | null;
   cookTime: string | null;
   servings: string | null;
+  pageKind: PageKind;
+}
+
+/**
+ * Types that mean "this page is about something that is not a recipe".
+ *
+ * Deliberately excludes the scaffolding every page carries — Organization,
+ * WebSite, WebPage, BreadcrumbList, Person, ImageObject. A WordPress recipe
+ * post declares most of those alongside its Recipe, so treating them as
+ * evidence would refuse the entire category this product exists for.
+ */
+const NON_RECIPE_TYPES = new Set([
+  "Product",
+  "ProductGroup",
+  "JobPosting",
+  "Event",
+  "SoftwareApplication",
+  "MobileApplication",
+  "Course",
+  "Movie",
+  "TVSeries",
+  "TVEpisode",
+  "MusicRecording",
+  "MusicAlbum",
+  "Book",
+  "VideoGame",
+  "RealEstateListing",
+  "Vehicle",
+  "Car",
+  "FlightReservation",
+  "MedicalWebPage",
+]);
+
+/** Every @type in a JSON-LD document, following @graph and nested nodes. */
+function collectSchemaTypes(node: unknown, found: Set<string>, depth = 0): void {
+  if (depth > 6 || node === null || typeof node !== "object") return;
+  if (Array.isArray(node)) {
+    for (const item of node) collectSchemaTypes(item, found, depth + 1);
+    return;
+  }
+  const record = node as Record<string, unknown>;
+  const type = record["@type"];
+  if (typeof type === "string") found.add(type);
+  else if (Array.isArray(type)) {
+    for (const t of type) if (typeof t === "string") found.add(t);
+  }
+  for (const key of ["@graph", "mainEntity", "itemListElement"]) {
+    if (key in record) collectSchemaTypes(record[key], found, depth + 1);
+  }
+}
+
+function detectPageKind($: cheerio.CheerioAPI): PageKind {
+  const types = new Set<string>();
+
+  $('script[type="application/ld+json"]').each((_, el) => {
+    try {
+      collectSchemaTypes(JSON.parse($(el).html() || ""), types);
+    } catch {
+      // Malformed JSON-LD is common; it just tells us nothing.
+    }
+  });
+
+  $("[itemtype]").each((_, el) => {
+    const raw = $(el).attr("itemtype") ?? "";
+    const name = raw.split("/").pop();
+    if (name) types.add(name);
+  });
+
+  // A Recipe anywhere on the page settles it, whatever else is declared —
+  // recipe posts routinely carry Organization, Person and BreadcrumbList too.
+  if (types.has("Recipe")) return "recipe";
+
+  // The plugins that publish recipes without schema still mark their markup.
+  if ($(".wprm-recipe, .tasty-recipes, .easyrecipe, [class*='recipe-card']").length) {
+    return "recipe";
+  }
+
+  for (const type of types) {
+    if (NON_RECIPE_TYPES.has(type)) return "other";
+  }
+
+  const ogType = $('meta[property="og:type"]').attr("content");
+  if (ogType && /^(product|profile|book|music\.|video\.movie)/.test(ogType)) {
+    return "other";
+  }
+
+  return "unknown";
 }
 
 /**
@@ -62,6 +160,9 @@ async function extractYouTubeMetaWithTitle(url: URL): Promise<RecipeMetadata> {
     thumbnailUrl,
     cookTime: null,
     servings: null,
+    // A video page tells us nothing either way, and it is exactly the source
+    // this product exists to capture — never refuse it.
+    pageKind: "unknown",
   };
 }
 
@@ -234,7 +335,12 @@ async function extractMetadataFromCaption(
   fallbackTitle: string,
 ): Promise<Omit<RecipeMetadata, "thumbnailUrl">> {
   if (!caption || !process.env.ANTHROPIC_API_KEY) {
-    return { title: fallbackTitle, cookTime: null, servings: null };
+    return {
+      title: fallbackTitle,
+      cookTime: null,
+      servings: null,
+      pageKind: "unknown",
+    };
   }
 
   try {
@@ -269,13 +375,19 @@ ${caption}`,
         title: parsed.title || fallbackTitle,
         cookTime: parsed.cookTime || null,
         servings: parsed.servings || null,
+        pageKind: "unknown" as const,
       };
     }
   } catch (error) {
     console.error("Error calling Claude for caption extraction:", error);
   }
 
-  return { title: fallbackTitle, cookTime: null, servings: null };
+  return {
+    title: fallbackTitle,
+    cookTime: null,
+    servings: null,
+    pageKind: "unknown",
+  };
 }
 
 /** Convert ISO 8601 duration (e.g. "PT1H30M") to human-readable "1 hr 30 min" */
@@ -476,6 +588,7 @@ async function extractOpenGraphMeta(url: string): Promise<RecipeMetadata> {
       thumbnailUrl: thumbnailUrl || null,
       cookTime,
       servings,
+      pageKind: detectPageKind($),
     };
   } catch (error) {
     console.error("Error fetching or parsing URL:", error);
@@ -501,6 +614,7 @@ async function extractOpenGraphMeta(url: string): Promise<RecipeMetadata> {
           thumbnailUrl: null,
           cookTime: null,
           servings: null,
+          pageKind: "unknown",
         };
       }
     }

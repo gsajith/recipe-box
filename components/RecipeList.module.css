@@ -28,6 +28,45 @@
   color: var(--primary);
 }
 
+/* ── Paged rendering ──────────────────────────────────────────────────────── */
+
+/* A quiet count, not a control. It tells you the list has an end. */
+.listStatus {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.listStatus:empty {
+  display: none;
+}
+
+.loadMoreWrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.75rem;
+  padding-bottom: 0.5rem;
+}
+
+.loadMoreBtn {
+  min-height: 44px;
+  padding: 0.625rem 1.75rem;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-full);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.loadMoreBtn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
 .recipeGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));

@@ -11,6 +11,7 @@ import {
   Share,
   Check,
   Trash2,
+  Plus,
   Tag as TagIcon,
 } from "lucide-react";
 import { Recipe } from "@/lib/types";
@@ -74,8 +75,26 @@ export function RecipeDetail({
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [isEditingTags, setIsEditingTags] = useState(false);
   const deleteTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [saveState, setSaveState] = useState<
+    "idle" | "saving" | "saved" | "error"
+  >("idle");
   const dialogRef = useModalDialog<HTMLDivElement>(onClose);
   const hostname = sourceHostname(recipe.url);
+
+  const handleSaveToCollection = async () => {
+    setSaveState("saving");
+    try {
+      const res = await fetch(`/api/recipes/${recipe.id}/save`, {
+        method: "POST",
+      });
+      // Already saved is the state the tap was asking for, not a failure.
+      if (res.ok || res.status === 409) setSaveState("saved");
+      else if (res.status === 401) window.location.href = "/sign-in";
+      else setSaveState("error");
+    } catch {
+      setSaveState("error");
+    }
+  };
 
   const handleDelete = () => {
     if (!confirmingDelete) {
@@ -379,6 +398,33 @@ export function RecipeDetail({
                   <span className={styles.openRecipeHost}>{hostname}</span>
                 )}
               </a>
+
+              {/* Someone else's recipe, so keeping it is the thing you came
+                  here to do. Secondary to the door rather than a second
+                  terracotta — one per region. */}
+              {readOnly && (
+                <button
+                  type="button"
+                  className={`${styles.saveToCollectionBtn} ${saveState === "saved" ? styles.saveToCollectionBtnDone : ""}`}
+                  onClick={handleSaveToCollection}
+                  disabled={saveState !== "idle"}>
+                  {saveState === "saved" ? (
+                    <Check size={16} aria-hidden="true" />
+                  ) : (
+                    <Plus size={16} aria-hidden="true" />
+                  )}
+                  {saveState === "saved"
+                    ? "In your collection"
+                    : saveState === "saving"
+                      ? "Saving…"
+                      : "Save to my collection"}
+                </button>
+              )}
+              {saveState === "error" && (
+                <p className={styles.saveError} role="alert">
+                  Couldn&apos;t save that just now. Try again in a moment.
+                </p>
+              )}
             </>
           )}
 
