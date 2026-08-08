@@ -42,6 +42,13 @@ interface RecipeFilterPanelProps {
    * this panel too, and two instances writing the same address bar would fight.
    */
   persistState?: boolean;
+  /**
+   * The recipe that was just saved. Filters now survive reloads, so a stale one
+   * is easy to still have on — and a save that lands outside it used to be
+   * confirmed once by its own modal and then be nowhere. The panel holds the
+   * filters, so the panel is what can notice.
+   */
+  lastSavedId?: string | null;
 }
 
 const VIEW_MODE_KEY = "recipeList_viewMode";
@@ -57,6 +64,7 @@ export function RecipeFilterPanel({
   controlsClassName,
   tagsFilterClassName,
   persistState = false,
+  lastSavedId,
 }: RecipeFilterPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -64,6 +72,9 @@ export function RecipeFilterPanel({
   const [selectedMeal, setSelectedMeal] = useState<string>(ALL);
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>(ALL);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  /** How far the list has been paged. In the URL with the filters, so going
+   *  back restores the position instead of only the query. */
+  const [page, setPage] = useState(1);
 
   /**
    * Six filter states used to live and die with the tab. Reload, share a
@@ -95,6 +106,8 @@ export function RecipeFilterPanel({
     if (source) setSelectedSource(source as SourceType);
     if (meal) setSelectedMeal(meal);
     if (difficulty) setSelectedDifficulty(difficulty);
+    const p = Number(params.get("page"));
+    if (Number.isInteger(p) && p > 1) setPage(p);
 
     const storedView = localStorage.getItem(VIEW_MODE_KEY);
     if (storedView === "grid" || storedView === "list") setViewMode(storedView);
@@ -112,6 +125,7 @@ export function RecipeFilterPanel({
     if (selectedSource !== ALL) params.set("source", selectedSource);
     if (selectedMeal !== ALL) params.set("meal", selectedMeal);
     if (selectedDifficulty !== ALL) params.set("difficulty", selectedDifficulty);
+    if (page > 1) params.set("page", String(page));
     const query = params.toString();
     window.history.replaceState(
       null,
@@ -126,6 +140,7 @@ export function RecipeFilterPanel({
     selectedSource,
     selectedMeal,
     selectedDifficulty,
+    page,
   ]);
 
   // A display preference, not a view of the data — it belongs to the device,
@@ -190,6 +205,16 @@ export function RecipeFilterPanel({
     selectedMeal,
     selectedDifficulty,
   ]);
+
+  /** Saved, real, and filtered out from under the person who just saved it. */
+  const savedButHidden =
+    !!lastSavedId &&
+    recipes.some((r) => r.id === lastSavedId) &&
+    !filteredRecipes.some((r) => r.id === lastSavedId);
+
+  const savedTitle = savedButHidden
+    ? recipes.find((r) => r.id === lastSavedId)?.title
+    : null;
 
   /** Identifies the current result set, so the list knows when to page anew. */
   const filterKey = [
@@ -358,6 +383,23 @@ export function RecipeFilterPanel({
         </div>
       )}
 
+      {savedButHidden && (
+        <div className={styles.savedHiddenNotice} role="status">
+          <span className={styles.savedHiddenText}>
+            Saved <strong>{savedTitle}</strong> — your filters are hiding it.
+          </span>
+          <button
+            type="button"
+            className={styles.savedHiddenAction}
+            onClick={() => {
+              clearAllFilters();
+              setSearchQuery("");
+            }}>
+            Show it
+          </button>
+        </div>
+      )}
+
       {loading ? (
         <div className={styles.loadingText}>Loading recipes...</div>
       ) : (
@@ -371,6 +413,8 @@ export function RecipeFilterPanel({
             viewMode={viewMode}
             tagCounts={tagCounts}
             resetKey={filterKey}
+            page={page}
+            onPageChange={setPage}
             isFiltered={hasActiveFilters || searchQuery.trim().length > 0}
             onClearFilters={() => {
               clearAllFilters();

@@ -131,6 +131,12 @@
   background: var(--surface-variant);
 }
 
+/* No cover at all — the same oat plane a failed load settles into, and
+   deliberately not pulsing: nothing is coming. */
+.thumbnailMissing {
+  background: var(--surface-variant);
+}
+
 .thumbnailWrapper {
   position: relative;
   width: 100%;

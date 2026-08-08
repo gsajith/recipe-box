@@ -86,6 +86,8 @@ export default function Home() {
   } | null>(null);
   /** The preview couldn't be read. A state, not a spinner that never lands. */
   const [previewFailed, setPreviewFailed] = useState(false);
+  /** The most recent save, so the list can tell you if its filters hide it. */
+  const [lastSavedId, setLastSavedId] = useState<string | null>(null);
   const lastOfferedUrl = useRef<string | null>(null);
   const recipesRef = useRef(recipes);
   useEffect(() => {
@@ -269,6 +271,7 @@ export default function Home() {
       const newRecipe = await response.json();
       setRecipes((prev) => [newRecipe, ...prev]);
       setSelectedRecipe(newRecipe);
+      setLastSavedId(newRecipe.id);
     } finally {
       setIsLoading(false);
     }
@@ -313,6 +316,7 @@ export default function Home() {
       const newRecipe = await saveRecipe(url, options);
       setRecipes((prev) => [newRecipe, ...prev]);
       setSelectedRecipe(newRecipe);
+      setLastSavedId(newRecipe.id);
     } finally {
       setIsLoading(false);
     }
@@ -411,6 +415,7 @@ export default function Home() {
             onRecipeDelete={handleDeleteRecipe}
             loading={isFetching}
             persistState
+            lastSavedId={lastSavedId}
             extraControls={
               <RecipeForm onSubmit={handleAddRecipe} isLoading={isLoading} />
             }

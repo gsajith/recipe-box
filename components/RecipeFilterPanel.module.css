@@ -85,6 +85,55 @@
   color: white;
 }
 
+/* ─── Saved, but filtered out ─────────────────────────────────────────────────
+   A save that lands outside the active filters is confirmed by its own modal
+   and then vanishes. This says where it went and offers the way back, in the
+   tonal recess the system uses for "this is about the thing, not the thing". */
+
+.savedHiddenNotice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+  padding: 0.875rem 1.125rem;
+  background: var(--surface-variant);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.savedHiddenText {
+  min-width: 0;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.savedHiddenText strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.savedHiddenAction {
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 0 1.25rem;
+  background: transparent;
+  color: var(--primary);
+  border: 1.5px solid var(--primary);
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.savedHiddenAction:hover {
+  background: var(--primary);
+  color: white;
+}
+
 /* ─── Loading ─────────────────────────────────────────────────────────────── */
 
 .loadingText {

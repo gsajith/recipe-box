@@ -14,6 +14,8 @@ export interface Recipe {
 
 export interface FeedRecipe extends Recipe {
   attribution_username: string | null;
+  /** Already in the viewer's collection — computed by the feed, not by a 409. */
+  already_saved: boolean;
 }
 
 export interface FeedRecipeItem extends FeedRecipe {

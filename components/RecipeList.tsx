@@ -19,6 +19,9 @@ import styles from "./RecipeList.module.css";
 const PAGE_SIZE = 24;
 
 interface RecipeListProps {
+  /** Pages already revealed, so the count can live in the URL with the filters. */
+  page?: number;
+  onPageChange?: (page: number) => void;
   recipes: Recipe[];
   onRecipeSelect: (recipe: Recipe) => void;
   onRecipeDelete: (recipeId: string) => Promise<void>;
@@ -41,10 +44,24 @@ export function RecipeList({
   onClearFilters,
   tagCounts,
   resetKey,
+  page,
+  onPageChange,
 }: RecipeListProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [internalPage, setInternalPage] = useState(1);
   const loadMoreRef = useRef<HTMLButtonElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  /** Set when the user asked for more, so focus follows what they revealed. */
+  const pendingFocus = useRef(false);
+
+  // The caller owns the page number when it wants it in the URL; otherwise the
+  // list keeps its own. Either way the arithmetic below is the same.
+  const currentPage = page ?? internalPage;
+  const setPage = (next: number) => {
+    if (onPageChange) onPageChange(next);
+    else setInternalPage(next);
+  };
+  const visibleCount = currentPage * PAGE_SIZE;
 
   const handleDelete = async (recipeId: string) => {
     setDeletingId(recipeId);
@@ -62,8 +79,17 @@ export function RecipeList({
   // events that look identical from here: deleting a recipe also shortens the
   // list, and collapsing someone back to the first 24 after they deleted
   // something eighty deep would be its own small betrayal.
+  //
+  // Skipping the first run matters: on mount this would otherwise fire and
+  // reset a page number the URL had just restored, so `?page=3` would render
+  // 24 recipes and then rewrite the address to drop the cursor it came with.
+  const prevResetKey = useRef(resetKey);
   useEffect(() => {
-    setVisibleCount(PAGE_SIZE);
+    if (prevResetKey.current === resetKey) return;
+    prevResetKey.current = resetKey;
+    setPage(1);
+    // setPage only forwards to a setter; including it would loop.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resetKey]);
 
   const visible = useMemo(
@@ -71,6 +97,23 @@ export function RecipeList({
     [recipes, visibleCount],
   );
   const remaining = recipes.length - visible.length;
+
+  /**
+   * "Show more" used to unmount its own button on the last page, dropping focus
+   * to <body> — the control whose whole job is "continue where I am" sent a
+   * keyboard user back to the top of the tab order. Move focus onto the first
+   * card that just appeared instead. Only when the button was pressed: the
+   * observer fires on scroll, and stealing focus mid-scroll would be worse.
+   */
+  useEffect(() => {
+    if (!pendingFocus.current) return;
+    pendingFocus.current = false;
+    const cards = listRef.current?.querySelectorAll<HTMLElement>(
+      "[data-recipe-card]",
+    );
+    const firstNew = cards?.[visibleCount - PAGE_SIZE];
+    firstNew?.focus();
+  }, [visibleCount]);
 
   // Reaching the button is the request. It stays a real button so the list
   // still finishes without IntersectionObserver, and so reaching the end by
@@ -82,15 +125,14 @@ export function RecipeList({
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisibleCount((n) => n + PAGE_SIZE);
-        }
+        if (entry.isIntersecting) setPage(currentPage + 1);
       },
       { rootMargin: "600px 0px" },
     );
     observer.observe(node);
     return () => observer.disconnect();
-  }, [remaining]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [remaining, currentPage]);
 
   if (recipes.length === 0) {
     // "Nothing saved" and "nothing matches" are different problems, and telling
@@ -118,7 +160,8 @@ export function RecipeList({
 
   return (
     <>
-      {viewMode === "list" ? (
+      <div ref={listRef}>
+        {viewMode === "list" ? (
         <RecipeListView
           recipes={visible}
           onRecipeSelect={onRecipeSelect}
@@ -133,8 +176,9 @@ export function RecipeList({
           onDelete={handleDelete}
           deletingId={deletingId}
           tagCounts={tagCounts}
-        />
-      )}
+          />
+        )}
+      </div>
 
       {/* Announced politely so a screen reader learns the list grew without
           having the growth interrupt whatever it was reading. */}
@@ -152,7 +196,10 @@ export function RecipeList({
             ref={loadMoreRef}
             type="button"
             className={styles.loadMoreBtn}
-            onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}>
+            onClick={() => {
+              pendingFocus.current = true;
+              setPage(currentPage + 1);
+            }}>
             Show {Math.min(remaining, PAGE_SIZE)} more
           </button>
         </div>

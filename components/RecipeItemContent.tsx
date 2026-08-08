@@ -62,26 +62,38 @@ export function RecipeItemContent({
         type="button"
         className={styles.cardOpenBtn}
         onClick={onSelect}
+        data-recipe-card
         aria-label={`Open ${recipe.title}`}
       />
 
-      {recipe.thumbnail_url && (
-        <div
-          className={
-            viewMode === "list"
-              ? styles.thumbnailListWrapper
-              : styles.thumbnailWrapper
-          }>
+      {/* The media block renders whether or not there is a cover. Gating the
+          whole thing on `thumbnail_url` dropped the source badge along with the
+          image, collapsing the card to a bare title — and since extraction
+          failure became a save you can complete rather than one that refuses,
+          that card is routine rather than rare. An oat plane and the origin
+          mark are the last identity a titleless, imageless recipe has. */}
+      <div
+        className={
+          viewMode === "list"
+            ? styles.thumbnailListWrapper
+            : styles.thumbnailWrapper
+        }>
+        {recipe.thumbnail_url ? (
           <RecipeThumbnail
             src={recipe.thumbnail_url}
             alt={recipe.title}
             className={`${styles.thumbnail} ${styles.thumbnailList}`}
           />
-          {viewMode !== "list" && (
-            <SourceBadge url={recipe.url} className={styles.sourceBadge} />
-          )}
-        </div>
-      )}
+        ) : (
+          <div
+            className={`${styles.thumbnail} ${styles.thumbnailList} ${styles.thumbnailMissing}`}
+            aria-hidden="true"
+          />
+        )}
+        {viewMode !== "list" && (
+          <SourceBadge url={recipe.url} className={styles.sourceBadge} />
+        )}
+      </div>
 
       <div
         className={`${styles.content} ${

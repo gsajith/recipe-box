@@ -35,11 +35,22 @@ export async function GET() {
       (profiles ?? []).map((p) => [p.clerk_user_id, p.username]),
     );
 
+    // You follow people whose taste you trust, which is exactly the population
+    // whose saves overlap yours — so a good share of any feed is already in
+    // your collection. Answer that here rather than letting a 409 be how the
+    // user finds out after tapping.
+    const { data: mine } = await supabase
+      .from("recipes")
+      .select("url")
+      .eq("user_id", userId);
+    const myUrls = new Set((mine ?? []).map((r) => r.url));
+
     feedRecipes = (recipes ?? []).map((r) => ({
       ...r,
       type: "recipe" as const,
       tags: (r.recipe_tags as { tag: string }[] | null)?.map((t) => t.tag) ?? [],
       attribution_username: usernameMap[r.user_id] ?? null,
+      already_saved: myUrls.has(r.url),
     }));
   }
 
