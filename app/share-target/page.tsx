@@ -57,7 +57,6 @@ function ShareTargetContent() {
   const sharedUrl = extractUrl(urlParam, textParam, titleParam);
 
   const [status, setStatus] = useState<Status>(sharedUrl ? "saving" : "no-url");
-  const [errorMessage, setErrorMessage] = useState("");
   const hasSaved = useRef(false);
 
   useEffect(() => {
@@ -91,10 +90,9 @@ function ShareTargetContent() {
       // Give the user a moment to see the success state, then go home
       setTimeout(() => router.replace("/"), 1500);
     } catch (err) {
+      // Keep the server's wording for the console; the user gets plain language.
+      console.error("Share-target save failed:", err);
       setStatus("error");
-      setErrorMessage(
-        err instanceof Error ? err.message : "Something went wrong",
-      );
     }
   }
 
@@ -177,7 +175,11 @@ function ShareTargetContent() {
             <p className={`${styles.statusText} ${styles.error}`}>
               We couldn&apos;t read the recipe details from that page.
             </p>
-            <p className={styles.errorDetail}>{errorMessage}</p>
+            {/* The server's own wording is for the log, not for the person
+                standing in their kitchen holding a link. */}
+            <p className={styles.errorDetail}>
+              You can still save the link and fill in the details yourself.
+            </p>
             <button
               type="button"
               className={styles.primaryBtn}

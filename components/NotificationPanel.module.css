@@ -341,3 +341,16 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* Motion is a response here, not information — honour the OS setting. */
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    animation: none;
+    opacity: 1;
+  }
+
+  .panelClosing {
+    animation: none;
+    opacity: 1;
+  }
+}

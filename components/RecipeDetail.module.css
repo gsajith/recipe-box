@@ -754,3 +754,16 @@
   background: var(--primary-dark);
   border-color: var(--primary-dark);
 }
+
+/* Motion is a response here, not information — honour the OS setting. */
+@media (prefers-reduced-motion: reduce) {
+  .deleteBtnConfirming {
+    animation: none;
+    opacity: 1;
+  }
+
+  .copiedLabel {
+    animation: none;
+    opacity: 1;
+  }
+}

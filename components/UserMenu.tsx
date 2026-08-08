@@ -54,10 +54,15 @@ export function UserMenu() {
       <button
         className={styles.trigger}
         onClick={() => setOpen((o) => !o)}
+        // The visible greeting is hidden on narrow screens, so the button
+        // needs a name that doesn't depend on it.
+        aria-label={`Account menu for ${name}`}
         aria-expanded={open}
         aria-haspopup="true">
-        <img src={user.imageUrl} alt={name} className={styles.avatar} />
-        Hi,&nbsp;<span className={styles.name}>{name}</span>!
+        <img src={user.imageUrl} alt="" className={styles.avatar} />
+        {/* One span so the whole greeting drops together on narrow screens —
+            hiding only the name left the trigger reading "Hi, !". */}
+        <span className={styles.name}>Hi,&nbsp;{name}!</span>
         <ChevronDown
           size={13}
           className={`${styles.chevron} ${open ? styles.chevronOpen : ""}`}
@@ -85,7 +90,7 @@ export function UserMenu() {
             className={`${styles.item} ${pathname === "/users" ? styles.itemActive : ""}`}
             onClick={() => setOpen(false)}>
             <Users size={15} />
-            User list
+            People
           </Link>
           <Link
             href="/settings"

@@ -218,6 +218,20 @@
   white-space: nowrap;
 }
 
+.youBadge {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  padding: 0.2rem 0.6rem;
+  background: var(--surface-variant);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
 .followingBadge {
   font-size: 0.8125rem;
   font-weight: 600;

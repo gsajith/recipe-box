@@ -373,7 +373,10 @@
   .bottomRow {
     margin: 0px;
     margin-top: -200px;
-    padding-top: 200px;
+    /* The yellow card's 200px bottom padding ends 64px below where this row's
+       content used to start, so the "N recipes saved" headline was painted
+       over by it. Clear the whole scoop instead of fighting it with z-index. */
+    padding-top: 264px;
     border-radius: 200px 200px 64px 64px / 200px 200px 64px 64px;
   }
 
@@ -391,18 +394,35 @@
     text-align: center;
   }
 
+  /* Fit the deck to the container rather than to a fixed step. The old
+     geometry was 420px wide inside a 296px clip, so the first card sat at
+     x=-112 and never appeared at all. */
   .recipeFan {
-    width: calc(var(--fan-total, 0) * 70px);
-    height: 120px;
+    width: 100%;
+    height: 116px;
     margin-top: 0px;
   }
 
   .fanCard {
-    top: calc(abs((var(--i, 0) - var(--fan-total, 6)/2 + 0.5) * 16px) - 10px);
-    left: calc(var(--i, 0) * 60px);
-    width: 100px;
-    height: 100px;
-    transform: rotate(calc((var(--i, 0) - var(--fan-total, 6)/2 + 0.5) * 9deg));
+    --fan-card-size: 84px;
+    /* The outermost cards rotate ~17.5deg, so their bounding boxes reach about
+       23px past the linear position. Inset both ends by that much or they clip. */
+    --fan-overhang: 23px;
+    /* Percentage resolves against .recipeFan, which is the container's inner
+       width — exact at every viewport, unlike a vw-based guess at the chrome.
+       Capped so the deck keeps overlapping instead of spreading into a row. */
+    --fan-step: min(
+      calc(
+        (100% - var(--fan-card-size) - 2 * var(--fan-overhang)) /
+          max(var(--fan-total, 6) - 1, 1)
+      ),
+      60px
+    );
+    top: calc(abs((var(--i, 0) - var(--fan-total, 6)/2 + 0.5) * 12px) - 6px);
+    left: calc(var(--fan-overhang) + var(--i, 0) * var(--fan-step));
+    width: var(--fan-card-size);
+    height: var(--fan-card-size);
+    transform: rotate(calc((var(--i, 0) - var(--fan-total, 6)/2 + 0.5) * 7deg));
   }
 
   .recipesBadge {
@@ -416,5 +436,23 @@
   .mobileFollowWrap {
     display: flex;
     justify-content: center;
+  }
+}
+
+/* Motion is a response here, not information — honour the OS setting. */
+@media (prefers-reduced-motion: reduce) {
+  .expandedControls {
+    animation: none;
+    opacity: 1;
+  }
+
+  .expandedTagsFilter {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fanCard {
+    animation: none;
+    opacity: 1;
   }
 }

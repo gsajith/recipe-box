@@ -128,15 +128,35 @@ export function RecipeFilterPanel({
    * Sorted alphabetically rather than by frequency: in a list this long you
    * are looking for a tag you already have in mind, not browsing the top ones.
    */
-  const otherTags = useMemo(() => {
-    const seen = new Set<string>();
+  /** How many recipes carry each tag. Drives both the card chips and the
+   *  "most used" group at the top of the Tags menu. */
+  const tagCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
     recipes.forEach((r) =>
       r.tags?.forEach((t) => {
-        if (!isPromotedTag(t)) seen.add(t);
+        counts[t] = (counts[t] ?? 0) + 1;
       }),
     );
-    return [...seen].sort((a, b) => a.localeCompare(b));
+    return counts;
   }, [recipes]);
+
+  const otherTags = useMemo(
+    () =>
+      Object.keys(tagCounts)
+        .filter((t) => !isPromotedTag(t))
+        .sort((a, b) => a.localeCompare(b)),
+    [tagCounts],
+  );
+
+  /** The handful you reach for constantly, pinned above the alphabet. */
+  const topTags = useMemo(
+    () =>
+      [...otherTags]
+        .sort((a, b) => tagCounts[b] - tagCounts[a])
+        .slice(0, 5)
+        .sort((a, b) => a.localeCompare(b)),
+    [otherTags, tagCounts],
+  );
   const isInverted = theme === "inverted";
   const hasActiveFilters =
     selectedSource !== ALL ||
@@ -216,6 +236,9 @@ export function RecipeFilterPanel({
             <FilterDropdown
               label="Tags"
               options={otherTags}
+              pinnedOptions={topTags}
+              pinnedLabel="Most used"
+              searchable
               values={selectedTags}
               onToggle={handleTagToggle}
               onClear={() => setSelectedTags([])}
@@ -248,6 +271,7 @@ export function RecipeFilterPanel({
             onRecipeSelect={onRecipeSelect}
             onRecipeDelete={onRecipeDelete ?? (async () => {})}
             viewMode={viewMode}
+            tagCounts={tagCounts}
             isFiltered={hasActiveFilters || searchQuery.trim().length > 0}
             onClearFilters={() => {
               clearAllFilters();

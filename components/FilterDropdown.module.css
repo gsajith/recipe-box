@@ -63,6 +63,59 @@
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
 }
 
+/* ─── Search + groups (long lists only) ───────────────────────────────────── */
+
+.searchRow {
+  position: sticky;
+  top: -0.25rem;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: -0.25rem -0.25rem 0.25rem;
+  padding: 0.5rem 0.625rem;
+  background: var(--surface);
+  border-bottom: 1.5px solid var(--border);
+}
+
+.searchIcon {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+}
+
+.searchInput {
+  width: 100%;
+  min-width: 0;
+  padding: 0.25rem 0;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.875rem;
+}
+
+.groupLabel {
+  margin: 0.5rem 0 0.25rem;
+  padding: 0 0.625rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.groupLabel:first-of-type {
+  margin-top: 0.25rem;
+}
+
+.noMatch {
+  margin: 0;
+  padding: 0.75rem 0.625rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
 .option {
   display: flex;
   align-items: center;
@@ -127,3 +180,6 @@
   border-color: white;
   color: var(--primary);
 }
+
+/* The menu itself is portalled to <body> on a light ground, so only the
+   trigger inverts — the search row keeps the menu's own surface. */

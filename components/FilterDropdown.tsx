@@ -9,7 +9,7 @@ import {
   type CSSProperties,
 } from "react";
 import { createPortal } from "react-dom";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, Search } from "lucide-react";
 import styles from "./FilterDropdown.module.css";
 
 interface FilterDropdownProps {
@@ -28,6 +28,11 @@ interface FilterDropdownProps {
   values?: string[];
   onToggle?: (value: string) => void;
   onClear?: () => void;
+  /** Shown in their own group above the full list — e.g. your most-used tags. */
+  pinnedOptions?: readonly string[];
+  pinnedLabel?: string;
+  /** Adds a type-to-filter field. Worth it past ~15 options. */
+  searchable?: boolean;
 }
 
 export const ALL = "All";
@@ -44,12 +49,17 @@ export function FilterDropdown({
   values,
   onToggle,
   onClear,
+  pinnedOptions,
+  pinnedLabel = "Most used",
+  searchable,
   inverted,
 }: FilterDropdownProps) {
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
   const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const isMulti = values !== undefined;
   const selected = values ?? [];
@@ -101,6 +111,18 @@ export function FilterDropdown({
     if (open) position();
   }, [open, position]);
 
+  // Reset the filter each time the menu opens, and put the caret in it.
+  useEffect(() => {
+    if (!open) return;
+    setQuery("");
+    if (searchable) searchRef.current?.focus();
+  }, [open, searchable]);
+
+  // The list shrinks as you type, so the menu has to re-measure its height.
+  useLayoutEffect(() => {
+    if (open) position();
+  }, [query, open, position]);
+
   useEffect(() => {
     if (!open) return;
 
@@ -150,6 +172,51 @@ export function FilterDropdown({
     };
   }, [open, position]);
 
+  const q = query.trim().toLowerCase();
+  const matches = (o: string) => !q || o.toLowerCase().includes(q);
+  // While filtering, the pinned group would just repeat entries that are
+  // already in the list below it — one flat set of results reads cleaner.
+  const visiblePinned = q ? [] : (pinnedOptions ?? []);
+  const visibleOptions = options.filter(matches);
+
+  const renderOption = (option: string, keyPrefix = "") => {
+    const isAll = option === ALL;
+        const isSelected = isMulti
+      ? isAll
+        ? selected.length === 0
+        : selected.includes(option)
+      : option === value;
+    return (
+      <button
+        key={keyPrefix + option}
+        type="button"
+        role="option"
+        aria-selected={isSelected}
+        className={styles.option}
+        onClick={(event) => {
+          event.stopPropagation();
+          if (isMulti) {
+            // Picking several tags in a row shouldn't mean reopening the
+            // menu each time; only "All" (clear) dismisses it.
+            if (isAll) {
+              onClear?.();
+              setOpen(false);
+            } else {
+              onToggle?.(option);
+            }
+            return;
+          }
+          onChange?.(option);
+          setOpen(false);
+        }}>
+        <span className={styles.checkSlot}>
+          {isSelected && <Check size={14} aria-hidden />}
+        </span>
+        {option}
+      </button>
+    );
+  };
+
   const menu = (
     <div
       ref={menuRef}
@@ -158,43 +225,37 @@ export function FilterDropdown({
       role="listbox"
       aria-multiselectable={isMulti || undefined}
       aria-label={label}>
-      {[ALL, ...options].map((option) => {
-        const isAll = option === ALL;
-        const isSelected = isMulti
-          ? isAll
-            ? selected.length === 0
-            : selected.includes(option)
-          : option === value;
-        return (
-          <button
-            key={option}
-            type="button"
-            role="option"
-            aria-selected={isSelected}
-            className={styles.option}
-            onClick={(event) => {
-              event.stopPropagation();
-              if (isMulti) {
-                // Picking several tags in a row shouldn't mean reopening the
-                // menu each time; only "All" (clear) dismisses it.
-                if (isAll) {
-                  onClear?.();
-                  setOpen(false);
-                } else {
-                  onToggle?.(option);
-                }
-                return;
-              }
-              onChange?.(option);
-              setOpen(false);
-            }}>
-            <span className={styles.checkSlot}>
-              {isSelected && <Check size={14} aria-hidden />}
-            </span>
-            {option}
-          </button>
-        );
-      })}
+      {searchable && (
+        <div className={styles.searchRow}>
+          <Search size={14} aria-hidden className={styles.searchIcon} />
+          <input
+            ref={searchRef}
+            type="text"
+            className={styles.searchInput}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onClick={(e) => e.stopPropagation()}
+            placeholder={`Filter ${label.toLowerCase()}…`}
+            aria-label={`Filter ${label.toLowerCase()}`}
+          />
+        </div>
+      )}
+
+      {!q && renderOption(ALL)}
+
+      {visiblePinned.length > 0 && (
+        <>
+          <p className={styles.groupLabel}>{pinnedLabel}</p>
+          {visiblePinned.map((o) => renderOption(o, "pinned-"))}
+          <p className={styles.groupLabel}>All {label.toLowerCase()}</p>
+        </>
+      )}
+
+      {visibleOptions.map((o) => renderOption(o))}
+
+      {visibleOptions.length === 0 && (
+        <p className={styles.noMatch}>No {label.toLowerCase()} match “{query}”</p>
+      )}
     </div>
   );
 
