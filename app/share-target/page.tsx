@@ -65,37 +65,38 @@ function ShareTargetContent() {
 
     hasSaved.current = true;
 
-    async function save() {
-      try {
-        const res = await fetch("/api/recipes", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url: sharedUrl }),
-        });
-
-        if (res.status === 409) {
-          setStatus("duplicate");
-          return;
-        }
-
-        if (!res.ok) {
-          const body = await res.json().catch(() => ({}));
-          throw new Error(body.error ?? "Failed to save recipe");
-        }
-
-        setStatus("saved");
-        // Give the user a moment to see the success state, then go home
-        setTimeout(() => router.replace("/"), 1500);
-      } catch (err) {
-        setStatus("error");
-        setErrorMessage(
-          err instanceof Error ? err.message : "Something went wrong",
-        );
-      }
-    }
-
     save();
   }, [isLoaded, isSignedIn, sharedUrl, router]);
+
+  async function save(allowFallback = false) {
+    setStatus("saving");
+    try {
+      const res = await fetch("/api/recipes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: sharedUrl, allowFallback }),
+      });
+
+      if (res.status === 409) {
+        setStatus("duplicate");
+        return;
+      }
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error ?? "Failed to save recipe");
+      }
+
+      setStatus("saved");
+      // Give the user a moment to see the success state, then go home
+      setTimeout(() => router.replace("/"), 1500);
+    } catch (err) {
+      setStatus("error");
+      setErrorMessage(
+        err instanceof Error ? err.message : "Something went wrong",
+      );
+    }
+  }
 
   if (!isLoaded) {
     return (
@@ -171,10 +172,25 @@ function ShareTargetContent() {
 
         {status === "error" && (
           <>
+            {/* Never throw the link away. Extraction failing is routine; the
+                user's intent to save was not. */}
             <p className={`${styles.statusText} ${styles.error}`}>
-              {errorMessage}
+              We couldn&apos;t read the recipe details from that page.
             </p>
-            <Link href="/" className={styles.secondaryBtn}>
+            <p className={styles.errorDetail}>{errorMessage}</p>
+            <button
+              type="button"
+              className={styles.primaryBtn}
+              onClick={() => save(true)}>
+              Save the link anyway
+            </button>
+            <button
+              type="button"
+              className={styles.secondaryBtn}
+              onClick={() => save(false)}>
+              Try again
+            </button>
+            <Link href="/" className={styles.textBtn}>
               Go to RecipeBox
             </Link>
           </>

@@ -31,6 +31,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
   const [clipboardUrl, setClipboardUrl] = useState<string | null>(null);
+  const [clipboardError, setClipboardError] = useState<string | null>(null);
   const [clipboardPreview, setClipboardPreview] = useState<{
     title: string | null;
     thumbnailUrl: string | null;
@@ -135,13 +136,25 @@ export default function Home() {
 
   const handleSaveFromClipboard = async () => {
     if (!clipboardUrl) return;
-    lastOfferedUrl.current = clipboardUrl;
-    setClipboardUrl(null);
-    const shareToken = getShareToken(clipboardUrl);
-    if (shareToken) {
-      await handleSaveFromShare(shareToken);
-    } else {
-      await handleAddRecipe(clipboardUrl);
+    const url = clipboardUrl;
+    const shareToken = getShareToken(url);
+    setClipboardError(null);
+    try {
+      if (shareToken) {
+        await handleSaveFromShare(shareToken);
+      } else {
+        await handleAddRecipe(url);
+      }
+      // Only dismiss once the save actually succeeded — this used to clear
+      // first, so a failed save looked identical to a successful one.
+      lastOfferedUrl.current = url;
+      setClipboardUrl(null);
+    } catch (error) {
+      setClipboardError(
+        error instanceof Error && error.message
+          ? error.message
+          : "Couldn't save that link.",
+      );
     }
   };
 
@@ -166,6 +179,7 @@ export default function Home() {
   const handleDismissClipboard = () => {
     lastOfferedUrl.current = clipboardUrl;
     setClipboardUrl(null);
+    setClipboardError(null);
   };
 
   // Fetch recipes when user is loaded
@@ -381,15 +395,18 @@ export default function Home() {
       <div className={styles.container}>
         <AppHeader />
 
-        <RecipeFilterPanel
-          recipes={recipes}
-          onRecipeSelect={setSelectedRecipe}
-          onRecipeDelete={handleDeleteRecipe}
-          loading={isFetching}
-          extraControls={
-            <RecipeForm onSubmit={handleAddRecipe} isLoading={isLoading} />
-          }
-        />
+        <main>
+          <h1 className="srOnly">Your recipes</h1>
+          <RecipeFilterPanel
+            recipes={recipes}
+            onRecipeSelect={setSelectedRecipe}
+            onRecipeDelete={handleDeleteRecipe}
+            loading={isFetching}
+            extraControls={
+              <RecipeForm onSubmit={handleAddRecipe} isLoading={isLoading} />
+            }
+          />
+        </main>
       </div>
 
       {selectedRecipe && (
@@ -437,6 +454,10 @@ export default function Home() {
                     "A RecipeBox user shared this with you!"
                   )}
                 </span>
+              ) : clipboardError ? (
+                <span className={styles.clipboardErrorText} role="alert">
+                  {clipboardError}
+                </span>
               ) : (
                 <span className={styles.clipboardUrl}>{clipboardUrl}</span>
               )}
@@ -445,7 +466,7 @@ export default function Home() {
               className={styles.clipboardSaveBtn}
               onClick={handleSaveFromClipboard}
               disabled={isLoading}>
-              {isLoading ? "Saving…" : "Save"}
+              {isLoading ? "Saving…" : clipboardError ? "Try again" : "Save"}
             </button>
             <button
               className={styles.clipboardDismissBtn}

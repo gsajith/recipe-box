@@ -12,15 +12,30 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { url } = await req.json();
+    const { url, allowFallback } = await req.json();
 
     if (!url) {
       return NextResponse.json({ error: "URL is required" }, { status: 400 });
     }
 
-    // Extract metadata from URL
-    const { title, thumbnailUrl, cookTime, servings } =
-      await extractRecipeMetadata(url);
+    // Extract metadata from URL. With allowFallback the caller has already been
+    // told extraction failed and chose to save the bare link anyway — a link
+    // with a hostname title beats losing it (see PRODUCT.md, principle 4).
+    let title: string;
+    let thumbnailUrl: string | null = null;
+    let cookTime: string | null = null;
+    let servings: string | null = null;
+    try {
+      ({ title, thumbnailUrl, cookTime, servings } =
+        await extractRecipeMetadata(url));
+    } catch (extractionError) {
+      if (!allowFallback) throw extractionError;
+      try {
+        title = new URL(url).hostname.replace(/^www\./, "");
+      } catch {
+        title = "Saved link";
+      }
+    }
 
     // Save recipe to Supabase
     const { data, error } = await supabase
@@ -41,10 +56,12 @@ export async function POST(req: NextRequest) {
       console.error("Supabase error:", error);
       // TODO: Open the recipe after error
       // Check for unique constraint violation
+      // 409 Conflict — the share target already checks for this status, and a
+      // duplicate is not the same failure as a save that broke.
       if (error.code === "23505") {
         return NextResponse.json(
           { error: "You have already saved this recipe" },
-          { status: 400 },
+          { status: 409 },
         );
       }
       return NextResponse.json(
