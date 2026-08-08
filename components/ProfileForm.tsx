@@ -273,7 +273,7 @@ export function ProfileForm({
           />
           {!removePhoto && (
             <span className={styles.avatarHint}>
-              Click to change photo
+              Tap to change photo
             </span>
           )}
           <div className={styles.avatarActions}>

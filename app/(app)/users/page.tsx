@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
+import { FollowButton } from "@/components/FollowButton";
+import RecipeThumbnail from "@/components/RecipeThumbnail";
 import styles from "./page.module.css";
 
 interface UserData {
@@ -14,6 +16,7 @@ interface UserData {
   follower_count: number;
   following_count: number;
   recipe_count: number;
+  recent_recipes: { title: string; thumbnail_url: string }[];
   is_followed_by_me: boolean;
   follows_me: boolean;
 }
@@ -24,8 +27,6 @@ export default function UsersPage() {
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [followedSet, setFollowedSet] = useState<Set<string>>(new Set());
-  const [loadingFollow, setLoadingFollow] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/users")
@@ -36,28 +37,6 @@ export default function UsersPage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
-
-  const isFollowing = (u: UserData) =>
-    followedSet.has(u.username) || u.is_followed_by_me;
-
-  const handleFollow = async (e: React.MouseEvent, u: UserData) => {
-    e.stopPropagation();
-    setLoadingFollow(u.username);
-    try {
-      const res = await fetch(`/api/users/${u.username}/follow`, {
-        method: "POST",
-      });
-      if (res.ok || res.status === 409) {
-        setFollowedSet((prev) => new Set([...prev, u.username]));
-      } else if (res.status === 401) {
-        window.location.href = "/sign-in";
-      }
-    } catch {
-      // ignore
-    } finally {
-      setLoadingFollow(null);
-    }
-  };
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -96,9 +75,9 @@ export default function UsersPage() {
         <ul className={styles.grid}>
           {filtered.map((u) => {
             const isMe = u.clerk_user_id === user?.id;
-            const following = isFollowing(u);
             const displayName = u.display_name || u.username || "User";
             const initial = displayName[0].toUpperCase();
+            const covers = u.recent_recipes ?? [];
 
             return (
               <li key={u.clerk_user_id} className={styles.card}>
@@ -110,60 +89,75 @@ export default function UsersPage() {
                     aria-label={`View ${displayName}'s profile`}
                   />
                 )}
-                <div className={styles.avatar}>
-                  {u.image_url ? (
-                    <img
-                      src={u.image_url}
-                      alt={displayName}
-                      className={styles.avatarImg}
-                    />
-                  ) : (
-                    <span className={styles.avatarInitial}>{initial}</span>
-                  )}
-                </div>
-                <div className={styles.info}>
-                  <div className={styles.displayName}>{displayName}</div>
-                  {u.username && (
-                    <div className={styles.username}>@{u.username}</div>
-                  )}
-                  <div className={styles.stats}>
-                    <span>
-                      <strong>{u.follower_count}</strong>{" "}
-                      {u.follower_count === 1 ? "follower" : "followers"}
-                    </span>
-                    <span className={styles.statDot}>·</span>
-                    <span>
-                      <strong>{u.following_count}</strong> following
-                    </span>
-                    <span className={styles.statDot}>·</span>
-                    <span>
-                      <strong>{u.recipe_count}</strong>{" "}
-                      {u.recipe_count === 1 ? "recipe" : "recipes"}
-                    </span>
-                  </div>
-                </div>
-                {isMe ? (
-                  // You were listed unmarked between strangers, with no
-                  // indication the row was your own.
-                  <span className={styles.youBadge}>You</span>
-                ) : (
-                  <div
-                    className={styles.actions}
-                    onClick={(e) => e.stopPropagation()}>
-                    {following ? (
-                      <span className={styles.followingBadge}>Following</span>
+                <div className={styles.identity}>
+                  <div className={styles.avatar}>
+                    {u.image_url ? (
+                      <img
+                        src={u.image_url}
+                        alt=""
+                        className={styles.avatarImg}
+                        loading="lazy"
+                      />
                     ) : (
-                      <button
-                        className={styles.followBtn}
-                        disabled={loadingFollow === u.username}
-                        onClick={(e) => handleFollow(e, u)}>
-                        {loadingFollow === u.username
-                          ? "…"
-                          : u.follows_me
-                            ? "Follow back"
-                            : "Follow"}
-                      </button>
+                      <span className={styles.avatarInitial} aria-hidden="true">
+                        {initial}
+                      </span>
                     )}
+                  </div>
+                  <div className={styles.info}>
+                    <div className={styles.displayName}>{displayName}</div>
+                    {u.username && (
+                      <div className={styles.username}>@{u.username}</div>
+                    )}
+                    {/* One number, not three. "How many recipes" is the only
+                        count that answers "should I follow this person?" —
+                        a following count answers nothing, and a row of zeroes
+                        was the loudest thing on the page. */}
+                    <div className={styles.stats}>
+                      {u.recipe_count > 0
+                        ? `${u.recipe_count} ${u.recipe_count === 1 ? "recipe" : "recipes"}`
+                        : "No recipes yet"}
+                      {u.follower_count > 0 && (
+                        <>
+                          <span className={styles.statDot} aria-hidden="true">
+                            ·
+                          </span>
+                          {u.follower_count}{" "}
+                          {u.follower_count === 1 ? "follower" : "followers"}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  {isMe ? (
+                    // You were listed unmarked between strangers, with no
+                    // indication the row was your own.
+                    <span className={styles.youBadge}>You</span>
+                  ) : (
+                    <div
+                      className={styles.actions}
+                      onClick={(e) => e.stopPropagation()}>
+                      <FollowButton
+                        username={u.username}
+                        initialIsFollowing={u.is_followed_by_me}
+                        variant="onLight"
+                        followLabel={u.follows_me ? "Follow back" : "Follow"}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* The actual answer to "should I follow this person?" is what
+                    they cook, so the card shows it. */}
+                {covers.length > 0 && (
+                  <div className={styles.covers} aria-hidden="true">
+                    {covers.map((r) => (
+                      <RecipeThumbnail
+                        key={r.thumbnail_url}
+                        src={r.thumbnail_url}
+                        alt=""
+                        className={styles.cover}
+                      />
+                    ))}
                   </div>
                 )}
               </li>

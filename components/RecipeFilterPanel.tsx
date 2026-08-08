@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { LayoutGrid, List } from "lucide-react";
 import { SearchBar } from "@/components/SearchBar";
 import { RecipeList } from "@/components/RecipeList";
@@ -49,7 +49,6 @@ export function RecipeFilterPanel({
   controlsClassName,
   tagsFilterClassName,
 }: RecipeFilterPanelProps) {
-  const [filteredRecipes, setFilteredRecipes] = useState(recipes);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedSource, setSelectedSource] = useState<SourceType | "All">(ALL);
@@ -73,15 +72,16 @@ export function RecipeFilterPanel({
     [recipes],
   );
 
-  // Re-filter whenever recipes or any filter selection change
-  useEffect(() => {
-    filterRecipes(recipes, searchQuery);
-  }, [recipes, selectedTags, selectedSource, selectedMeal, selectedDifficulty]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  function filterRecipes(recipesList: Recipe[], query: string) {
-    let filtered = recipesList;
-    if (query.trim()) {
-      const lowerQuery = query.toLowerCase();
+  /**
+   * Derived, not stored. This used to be state written by an effect whose
+   * dependency list deliberately omitted `searchQuery` — so the list and the
+   * query could disagree, and clearing one could not clear the other. There is
+   * no state to keep in sync if the list is simply a function of the filters.
+   */
+  const filteredRecipes = useMemo(() => {
+    let filtered = recipes;
+    if (searchQuery.trim()) {
+      const lowerQuery = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (r) =>
           r.title.toLowerCase().includes(lowerQuery) ||
@@ -102,13 +102,15 @@ export function RecipeFilterPanel({
     if (selectedDifficulty !== ALL) {
       filtered = filtered.filter((r) => r.tags?.includes(selectedDifficulty));
     }
-    setFilteredRecipes(filtered);
-  }
-
-  function handleSearch(query: string) {
-    setSearchQuery(query);
-    filterRecipes(recipes, query);
-  }
+    return filtered;
+  }, [
+    recipes,
+    searchQuery,
+    selectedTags,
+    selectedSource,
+    selectedMeal,
+    selectedDifficulty,
+  ]);
 
   function handleTagToggle(tag: string) {
     setSelectedTags((prev) =>
@@ -175,25 +177,33 @@ export function RecipeFilterPanel({
   return (
     <div className={isInverted ? styles.invertedTheme : undefined}>
       <div className={`${styles.controls} ${controlsClassName ?? ""}`}>
-        <SearchBar onSearch={handleSearch} />
-        <div className={styles.viewToggle}>
+        <SearchBar value={searchQuery} onSearch={setSearchQuery} />
+        {/* Two glyphs with a title attribute named nothing and announced no
+            state. A toggle has to say which one it is and whether it's on. */}
+        <div className={styles.viewToggle} role="group" aria-label="View mode">
           <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
               setViewMode("grid");
             }}
             className={`${styles.viewToggleBtn} ${viewMode === "grid" ? styles.viewToggleBtnActive : ""}`}
+            aria-label="Grid view"
+            aria-pressed={viewMode === "grid"}
             title="Grid view">
-            <LayoutGrid size={16} />
+            <LayoutGrid size={16} aria-hidden="true" />
           </button>
           <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
               setViewMode("list");
             }}
             className={`${styles.viewToggleBtn} ${viewMode === "list" ? styles.viewToggleBtnActive : ""}`}
+            aria-label="List view"
+            aria-pressed={viewMode === "list"}
             title="List view">
-            <List size={16} />
+            <List size={16} aria-hidden="true" />
           </button>
         </div>
         {extraControls}
@@ -275,7 +285,7 @@ export function RecipeFilterPanel({
             isFiltered={hasActiveFilters || searchQuery.trim().length > 0}
             onClearFilters={() => {
               clearAllFilters();
-              handleSearch("");
+              setSearchQuery("");
             }}
           />
         </div>

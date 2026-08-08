@@ -27,5 +27,5 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  font-family: var(--font-sans);
+  font-family: var(--font-stack-sans);
 }

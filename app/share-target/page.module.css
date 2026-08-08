@@ -95,7 +95,7 @@
   display: block;
   width: 100%;
   padding: 0.875rem 1rem;
-  background: var(--orange);
+  background: var(--orange-strong);
   color: white;
   border: none;
   border-radius: var(--radius-full);

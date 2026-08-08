@@ -84,7 +84,7 @@
 .avatarActionBtn {
   background: none;
   border: 1.5px solid var(--danger);
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   min-height: 44px;
   padding: 0.25rem 1rem;
   font-size: 0.8125rem;
@@ -145,13 +145,17 @@
   pointer-events: none;
 }
 
+/* Was 8px and cream-filled — a field that looked like the page it sat on,
+   inside a white card, inverting the system's own "white means object on
+   cream" relationship. The documented field is 12px on surface white. */
 .input {
   width: 100%;
+  min-height: 44px;
   padding: 0.625rem 0.75rem;
   border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   font-size: 0.9375rem;
-  background: var(--background);
+  background: var(--surface);
   color: var(--text-primary);
   transition: border-color 0.15s;
   font-family: inherit;
@@ -208,7 +212,7 @@
   min-height: 44px;
   margin-top: 0.25rem;
   padding: 0.75rem 1.5rem;
-  background: var(--orange);
+  background: var(--orange-strong);
   color: #fff;
   border: none;
   border-radius: var(--radius-full);

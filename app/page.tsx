@@ -9,26 +9,27 @@ import { AppHeader } from "@/components/AppHeader";
 import { RecipeDetail } from "@/components/RecipeDetail";
 import { RecipeFilterPanel } from "@/components/RecipeFilterPanel";
 import { Recipe } from "@/lib/types";
+import {
+  canSaveAnyway,
+  failureCopy,
+  isDuplicate,
+  saveRecipe,
+  type SaveFailure,
+} from "@/lib/saveRecipe";
 import styles from "./page.module.css";
 
-/** Carries the HTTP status so callers can tell "already saved" from "broke". */
-type SaveError = Error & { status?: number };
-
-function saveError(message: string, status: number): SaveError {
-  const error: SaveError = new Error(message);
+function saveError(message: string, status: number): SaveFailure {
+  const error = new Error(message) as SaveFailure;
   error.status = status;
+  error.code = status === 409 ? "duplicate" : "unknown";
   return error;
-}
-
-/** A save rejected because the recipe is already in the collection. */
-function isDuplicate(error: unknown): boolean {
-  return (error as SaveError)?.status === 409;
 }
 
 function getShareToken(url: string): string | null {
   try {
     const u = new URL(url);
     const isRecipeBox =
+      (typeof window !== "undefined" && u.origin === window.location.origin) ||
       (u.hostname === "localhost" && u.port === "3000") ||
       u.hostname === "recipe-box-gs.vercel.app";
     if (!isRecipeBox) return null;
@@ -39,6 +40,33 @@ function getShareToken(url: string): string | null {
   }
 }
 
+/**
+ * The banner is the product's headline mechanic, so a junk offer is expensive —
+ * two of them and the user stops reading it. It has no way to know whether a
+ * page is a recipe, but it can refuse the two things that are definitely not
+ * one: RecipeBox's own pages (a share link excepted, which is the whole point)
+ * and a bare site root. It once offered to save this app's own homepage.
+ */
+function isOfferable(url: string): boolean {
+  try {
+    const u = new URL(url);
+    if (typeof window !== "undefined" && u.origin === window.location.origin) {
+      return getShareToken(url) !== null;
+    }
+    return u.pathname !== "/" || u.search.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+function hostnameOf(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
+}
+
 export default function Home() {
   const { user, isLoaded } = useUser();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -46,13 +74,18 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
   const [clipboardUrl, setClipboardUrl] = useState<string | null>(null);
-  const [clipboardError, setClipboardError] = useState<string | null>(null);
+  const [clipboardError, setClipboardError] = useState<{
+    message: string;
+    recoverable: boolean;
+  } | null>(null);
   const [clipboardPreview, setClipboardPreview] = useState<{
     title: string | null;
     thumbnailUrl: string | null;
     sharerUsername?: string | null;
     originalUrl?: string;
   } | null>(null);
+  /** The preview couldn't be read. A state, not a spinner that never lands. */
+  const [previewFailed, setPreviewFailed] = useState(false);
   const lastOfferedUrl = useRef<string | null>(null);
   const recipesRef = useRef(recipes);
   useEffect(() => {
@@ -68,6 +101,7 @@ export default function Home() {
         const text = await navigator.clipboard.readText();
         const trimmed = text?.trim();
         if (!trimmed?.match(/^https?:\/\//)) return;
+        if (!isOfferable(trimmed)) return;
         if (trimmed === lastOfferedUrl.current) return;
         if (recipesRef.current.some((r) => r.url === trimmed)) {
           lastOfferedUrl.current = trimmed;
@@ -113,43 +147,66 @@ export default function Home() {
   useEffect(() => {
     if (!clipboardUrl) {
       setClipboardPreview(null);
+      setPreviewFailed(false);
       return;
     }
     setClipboardPreview(null);
+    setPreviewFailed(false);
+
+    // A preview that never resolves used to leave the title skeleton pulsing
+    // indefinitely — the banner looked like it was still thinking, forever.
+    // Every path below lands somewhere, including the one where nothing answers.
+    // `cancelled` matters as much as `settled`: without it a slow response for
+    // the previous URL would land on the current one and mark it failed.
+    let settled = false;
+    let cancelled = false;
+    const land = (preview: typeof clipboardPreview) => {
+      if (settled || cancelled) return;
+      settled = true;
+      if (preview) setClipboardPreview(preview);
+      else setPreviewFailed(true);
+    };
+    const timeout = setTimeout(() => land(null), 8000);
+
     const shareToken = getShareToken(clipboardUrl);
     if (shareToken) {
       fetch(`/api/share/${shareToken}`)
         .then((r) => (r.ok ? r.json() : null))
         .then((data) => {
-          if (!data) return;
+          if (!data) return land(null);
+          if (cancelled) return;
           if (data.is_own) {
+            settled = true;
             setClipboardUrl(null);
             lastOfferedUrl.current = clipboardUrl;
             return;
           }
-          setClipboardPreview({
+          land({
             title: data.title,
             thumbnailUrl: data.thumbnail_url,
             sharerUsername: data.sharer_username,
             originalUrl: data.url,
           });
         })
-        .catch(() => {});
+        .catch(() => land(null));
     } else {
       fetch(`/api/recipes/preview?url=${encodeURIComponent(clipboardUrl)}`)
         .then((r) => (r.ok ? r.json() : null))
-        .then((data) => {
-          if (data)
-            setClipboardPreview({
-              title: data.title,
-              thumbnailUrl: data.thumbnailUrl,
-            });
-        })
-        .catch(() => {});
+        .then((data) =>
+          land(
+            data ? { title: data.title, thumbnailUrl: data.thumbnailUrl } : null,
+          ),
+        )
+        .catch(() => land(null));
     }
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
   }, [clipboardUrl]);
 
-  const handleSaveFromClipboard = async () => {
+  const handleSaveFromClipboard = async (allowFallback = false) => {
     if (!clipboardUrl) return;
     const url = clipboardUrl;
     const shareToken = getShareToken(url);
@@ -158,7 +215,7 @@ export default function Home() {
       if (shareToken) {
         await handleSaveFromShare(shareToken);
       } else {
-        await handleAddRecipe(url);
+        await handleAddRecipe(url, { allowFallback });
       }
       // Only dismiss once the save actually succeeded — this used to clear
       // first, so a failed save looked identical to a successful one.
@@ -174,11 +231,13 @@ export default function Home() {
         fetchRecipes();
         return;
       }
-      setClipboardError(
-        error instanceof Error && error.message
-          ? error.message
-          : "Couldn't save that link.",
-      );
+      // Extraction failing is recoverable: the link is still worth keeping.
+      // The banner says so and its button becomes the recovery.
+      const copy = failureCopy(error);
+      setClipboardError({
+        message: copy.message,
+        recoverable: canSaveAnyway(error),
+      });
     }
   };
 
@@ -233,21 +292,13 @@ export default function Home() {
     }
   };
 
-  const handleAddRecipe = async (url: string) => {
+  const handleAddRecipe = async (
+    url: string,
+    options?: { allowFallback?: boolean },
+  ) => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/recipes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw saveError(error.error || "Failed to add recipe", response.status);
-      }
-
-      const newRecipe = await response.json();
+      const newRecipe = await saveRecipe(url, options);
       setRecipes((prev) => [newRecipe, ...prev]);
       setSelectedRecipe(newRecipe);
     } finally {
@@ -378,9 +429,12 @@ export default function Home() {
             </div>
             <div className={styles.clipboardText}>
               <span className={styles.clipboardTitle}>
-                {clipboardPreview?.title ?? (
-                  <span className={styles.clipboardTitleLoading} />
-                )}
+                {clipboardPreview?.title ??
+                  (previewFailed ? (
+                    hostnameOf(clipboardUrl)
+                  ) : (
+                    <span className={styles.clipboardTitleLoading} />
+                  ))}
               </span>
               {clipboardPreview && "sharerUsername" in clipboardPreview ? (
                 <span className={styles.clipboardAttribution}>
@@ -401,17 +455,27 @@ export default function Home() {
                 </span>
               ) : clipboardError ? (
                 <span className={styles.clipboardErrorText} role="alert">
-                  {clipboardError}
+                  {clipboardError.message}
                 </span>
               ) : (
                 <span className={styles.clipboardUrl}>{clipboardUrl}</span>
               )}
             </div>
+            {/* Wrapped rather than passed directly: the handler's first
+                parameter is allowFallback, and a click event is truthy. */}
             <button
               className={styles.clipboardSaveBtn}
-              onClick={handleSaveFromClipboard}
+              onClick={() =>
+                handleSaveFromClipboard(clipboardError?.recoverable ?? false)
+              }
               disabled={isLoading}>
-              {isLoading ? "Saving…" : clipboardError ? "Try again" : "Save"}
+              {isLoading
+                ? "Saving…"
+                : clipboardError?.recoverable
+                  ? "Save anyway"
+                  : clipboardError
+                    ? "Try again"
+                    : "Save"}
             </button>
             <button
               className={styles.clipboardDismissBtn}

@@ -29,7 +29,19 @@ export async function POST(req: NextRequest) {
       ({ title, thumbnailUrl, cookTime, servings } =
         await extractRecipeMetadata(url));
     } catch (extractionError) {
-      if (!allowFallback) throw extractionError;
+      if (!allowFallback) {
+        // A site that blocks scraping is not a broken save — it is a save the
+        // user can still complete. Say so with a code the client can branch on,
+        // and keep the extractor's own wording in the log where it belongs.
+        console.error("Extraction failed:", extractionError);
+        return NextResponse.json(
+          {
+            error: "Could not read recipe metadata from that URL",
+            code: "extraction_failed",
+          },
+          { status: 422 },
+        );
+      }
       try {
         title = new URL(url).hostname.replace(/^www\./, "");
       } catch {
@@ -72,11 +84,11 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(data, { status: 201 });
   } catch (error) {
+    // The exception's own text is a developer artifact. It used to be rendered
+    // to the user verbatim; the log is the right place for it.
     console.error("Error creating recipe:", error);
     return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Internal server error",
-      },
+      { error: "Failed to save recipe" },
       { status: 500 },
     );
   }

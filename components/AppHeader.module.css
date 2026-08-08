@@ -78,7 +78,7 @@
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  font-family: var(--font-serif), Georgia, serif;
+  font-family: var(--font-stack-serif);
   font-size: clamp(1.5rem, 7vw, 2.5rem);
   font-weight: 800;
   /* Was line-height: 0, which collapsed the anchor's box to zero height — the

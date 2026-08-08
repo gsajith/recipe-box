@@ -42,7 +42,7 @@
 
 .title {
   margin: 0;
-  font-family: var(--font-serif), Georgia, serif;
+  font-family: var(--font-stack-serif);
   font-size: 1.2rem;
   font-weight: 700;
   line-height: 1.35;

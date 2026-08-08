@@ -30,7 +30,7 @@
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  font-family: var(--font-serif), Georgia, serif;
+  font-family: var(--font-stack-serif);
   font-size: 1.35rem;
   font-weight: 800;
   font-style: italic;
@@ -80,7 +80,7 @@
 }
 
 .heroTitle {
-  font-family: var(--font-serif), Georgia, serif;
+  font-family: var(--font-stack-serif);
   font-size: clamp(2.75rem, 6.5vw, 4.75rem);
   font-weight: 800;
   line-height: 1.05;
@@ -200,7 +200,7 @@
 }
 
 .sectionTitle {
-  font-family: var(--font-serif), Georgia, serif;
+  font-family: var(--font-stack-serif);
   font-size: clamp(1.85rem, 4vw, 2.6rem);
   font-weight: 700;
   line-height: 1.15;
@@ -278,7 +278,7 @@
 
 .closeTitle {
   max-width: 16ch;
-  font-family: var(--font-serif), Georgia, serif;
+  font-family: var(--font-stack-serif);
   font-size: clamp(2rem, 5vw, 3.25rem);
   font-weight: 800;
   line-height: 1.1;

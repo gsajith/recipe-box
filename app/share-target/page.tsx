@@ -5,6 +5,12 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
+import {
+  canSaveAnyway,
+  isDuplicate,
+  saveRecipe,
+  SAVE_FAILURE_COPY,
+} from "@/lib/saveRecipe";
 import styles from "./page.module.css";
 
 type Status = "saving" | "saved" | "duplicate" | "error" | "no-url";
@@ -57,6 +63,8 @@ function ShareTargetContent() {
   const sharedUrl = extractUrl(urlParam, textParam, titleParam);
 
   const [status, setStatus] = useState<Status>(sharedUrl ? "saving" : "no-url");
+  /** Whether the failure is one the user can still save through. */
+  const [recoverable, setRecoverable] = useState(false);
   const hasSaved = useRef(false);
 
   useEffect(() => {
@@ -70,28 +78,18 @@ function ShareTargetContent() {
   async function save(allowFallback = false) {
     setStatus("saving");
     try {
-      const res = await fetch("/api/recipes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: sharedUrl, allowFallback }),
-      });
-
-      if (res.status === 409) {
-        setStatus("duplicate");
-        return;
-      }
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error ?? "Failed to save recipe");
-      }
-
+      await saveRecipe(sharedUrl as string, { allowFallback });
       setStatus("saved");
       // Give the user a moment to see the success state, then go home
       setTimeout(() => router.replace("/"), 1500);
     } catch (err) {
-      // Keep the server's wording for the console; the user gets plain language.
-      console.error("Share-target save failed:", err);
+      if (isDuplicate(err)) {
+        setStatus("duplicate");
+        return;
+      }
+      // saveRecipe has already logged the server's wording; the user gets the
+      // plain-language version, shared with every other capture surface.
+      setRecoverable(canSaveAnyway(err));
       setStatus("error");
     }
   }
@@ -160,7 +158,7 @@ function ShareTargetContent() {
         {status === "duplicate" && (
           <>
             <p className={`${styles.statusText} ${styles.muted}`}>
-              You&apos;ve already saved this recipe.
+              {SAVE_FAILURE_COPY.duplicate.message}
             </p>
             <Link href="/" className={styles.primaryBtn}>
               Go to RecipeBox
@@ -171,24 +169,30 @@ function ShareTargetContent() {
         {status === "error" && (
           <>
             {/* Never throw the link away. Extraction failing is routine; the
-                user's intent to save was not. */}
+                user's intent to save was not. The wording is shared with the
+                Add Recipe modal and the clipboard banner so the same failure
+                reads the same way whichever door you came in. */}
             <p className={`${styles.statusText} ${styles.error}`}>
-              We couldn&apos;t read the recipe details from that page.
+              {recoverable
+                ? SAVE_FAILURE_COPY.extraction_failed.message
+                : SAVE_FAILURE_COPY.unknown.message}
             </p>
-            {/* The server's own wording is for the log, not for the person
-                standing in their kitchen holding a link. */}
-            <p className={styles.errorDetail}>
-              You can still save the link and fill in the details yourself.
-            </p>
+            {recoverable && (
+              <>
+                <p className={styles.errorDetail}>
+                  {SAVE_FAILURE_COPY.extraction_failed.detail}
+                </p>
+                <button
+                  type="button"
+                  className={styles.primaryBtn}
+                  onClick={() => save(true)}>
+                  Save the link anyway
+                </button>
+              </>
+            )}
             <button
               type="button"
-              className={styles.primaryBtn}
-              onClick={() => save(true)}>
-              Save the link anyway
-            </button>
-            <button
-              type="button"
-              className={styles.secondaryBtn}
+              className={recoverable ? styles.secondaryBtn : styles.primaryBtn}
               onClick={() => save(false)}>
               Try again
             </button>

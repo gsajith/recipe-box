@@ -6,6 +6,11 @@
   --primary-dark: #132A1F;
   --accent: #F5C73A;
   --orange: #C86C44;
+  /* Terracotta tuned for labels that sit below the WCAG large-text bar. White
+     on --orange is 3.7:1, which the recorded exception only covers at >=18.66px
+     bold (the detail modal's door, the landing CTA). Every smaller terracotta
+     label uses this instead: 4.7:1, same hue, still unmistakably the door. */
+  --orange-strong: #B25B39;
   --orange-dark: #A14F34;
   --danger: #C94832;
   --text-primary: #1A1A1A;
@@ -23,6 +28,11 @@
   --radius-md: 12px;
   --radius-lg: 20px;
   --radius-full: 9999px;
+  /* One spelling per family. Four variants of the sans stack and two of
+     the serif stack were live at the same time. */
+  --font-stack-sans: var(--font-sans), -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  --font-stack-serif: var(--font-serif), Georgia, serif;
 }
 
 html {
@@ -41,14 +51,14 @@ body {
   flex-direction: column;
   color: var(--text-primary);
   background: var(--background);
-  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-stack-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.5;
 }
 
 h1, h2, h3, h4 {
-  font-family: var(--font-serif), Georgia, "Times New Roman", serif;
+  font-family: var(--font-stack-serif);
 }
 
 * {
@@ -83,13 +93,13 @@ a {
 }
 
 button {
-  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--font-stack-sans);
   cursor: pointer;
 }
 
 input,
 textarea {
-  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--font-stack-sans);
 }
 
 /* The UA default (#757575) misses 4.5:1 against the cream ground. */

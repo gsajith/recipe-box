@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Bell, X, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import type { FeedItem } from "@/lib/types";
+import { useModalDialog } from "@/lib/useModalDialog";
 import styles from "./NotificationPanel.module.css";
 import RecipeThumbnail from "./RecipeThumbnail";
 
@@ -33,6 +34,49 @@ function timeAgo(isoString: string) {
 
 const LS_KEY = "notificationPanel_lastOpenedAt";
 
+/**
+ * The feed is a full-screen sheet on a phone, so it owes the same debt every
+ * other overlay in the app pays: a real dialog role, focus that moves in and
+ * stays in, the page behind scroll-locked and hidden from assistive tech.
+ * It was the one overlay that never adopted the hook.
+ *
+ * Split into its own component so the hook mounts and unmounts with the sheet.
+ * The outside-click listener lives here too: the hook marks siblings `inert`,
+ * which includes the backdrop, so the backdrop's own onClick would never fire.
+ */
+function FeedSheet({
+  className,
+  onClose,
+  children,
+}: {
+  className: string;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  const dialogRef = useModalDialog<HTMLDivElement>(onClose);
+
+  useEffect(() => {
+    function handleMouseDown(e: MouseEvent) {
+      const node = dialogRef.current;
+      if (node && !node.contains(e.target as Node)) onClose();
+    }
+    document.addEventListener("mousedown", handleMouseDown);
+    return () => document.removeEventListener("mousedown", handleMouseDown);
+  }, [dialogRef, onClose]);
+
+  return (
+    <div
+      ref={dialogRef}
+      className={className}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Following feed"
+      tabIndex={-1}>
+      {children}
+    </div>
+  );
+}
+
 export function NotificationPanel() {
   const [open, setOpen] = useState(false);
   const [closing, setClosing] = useState(false);
@@ -41,7 +85,6 @@ export function NotificationPanel() {
   const [lastSeenAt, setLastSeenAt] = useState<string | null>(null);
   const [followedBack, setFollowedBack] = useState<Set<string>>(new Set());
   const [loadingFollow, setLoadingFollow] = useState<string | null>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch("/api/feed")
@@ -70,26 +113,6 @@ export function NotificationPanel() {
       setClosing(false);
     }, 200);
   };
-
-  useEffect(() => {
-    if (!open) return;
-    function handleClick(e: MouseEvent) {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
-        handleClose();
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === "Escape") handleClose();
-    }
-    document.addEventListener("keydown", handleKey);
-    return () => document.removeEventListener("keydown", handleKey);
-  }, [open]);
 
   // Read the persisted timestamp once on mount for badge counting
   const [lastOpenedAt, setLastOpenedAt] = useState<string | null>(null);
@@ -142,9 +165,9 @@ export function NotificationPanel() {
             className={`${styles.overlay} ${closing ? styles.overlayClosing : ""}`}
             onClick={handleClose}
           />
-          <div
+          <FeedSheet
             className={`${styles.panel} ${closing ? styles.panelClosing : ""}`}
-            ref={panelRef}>
+            onClose={handleClose}>
             <div className={styles.panelHeader}>
               <span className={styles.panelTitle}>Following</span>
               <button
@@ -272,7 +295,7 @@ export function NotificationPanel() {
                 })
               )}
             </div>
-          </div>
+          </FeedSheet>
         </>
       )}
     </>
