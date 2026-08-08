@@ -93,7 +93,7 @@
 }
 
 .metaDot {
-  color: var(--border);
+  color: var(--text-faint);
   font-size: 0.82rem;
 }
 

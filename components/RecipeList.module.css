@@ -9,6 +9,25 @@
   font-size: 1rem;
 }
 
+.emptyAction {
+  min-height: 44px;
+  margin-top: 1rem;
+  padding: 0.625rem 1.5rem;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-full);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.emptyAction:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
 .recipeGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -40,10 +59,30 @@
   align-items: stretch;
 }
 
-.recipeCard:hover {
+.recipeCard:hover,
+.recipeCard:has(.cardOpenBtn:focus-visible) {
   box-shadow: var(--shadow-lg);
   transform: translateY(-4px);
   border-color: var(--primary);
+}
+
+/* The whole card is one button. A stretched overlay rather than a wrapping
+   <div role="button"> keeps the delete control a real sibling instead of
+   nesting interactive elements, and gives the card exactly one tab stop. */
+.cardOpenBtn {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: inherit;
+  cursor: pointer;
+}
+
+.cardOpenBtn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -3px;
 }
 
 .thumbnail {
@@ -160,7 +199,7 @@
 }
 
 .metaDot {
-  color: var(--border);
+  color: var(--text-faint);
   font-size: 0.75rem;
   line-height: 1;
 }
@@ -194,6 +233,10 @@
   position: absolute;
   top: 0.625rem;
   right: 0.625rem;
+  z-index: 2;
+  /* Invisible must also mean untappable. Without this the button is a live
+     40x38 target in the exact corner a thumb grabs to scroll. */
+  pointer-events: none;
   color: white;
   border: none;
   border-radius: var(--radius-full);
@@ -216,13 +259,22 @@
   transform: scale(1.05);
 }
 
+/* An armed delete is never invisible, whatever revealed it. */
 .deleteBtnConfirming {
   background: var(--danger);
   animation: deletePulse 0.6s ease;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .deleteBtnConfirming:hover {
   background: var(--danger);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deleteBtnConfirming {
+    animation: none;
+  }
 }
 
 @keyframes deletePulse {
@@ -239,6 +291,19 @@
   }
 }
 
-.recipeCard:hover .deleteBtn {
-  opacity: 1;
+/* Reveal-on-hover only where hover exists. On touch the card has no hover
+   state, so this affordance would be permanently invisible — delete lives in
+   the detail modal there, where it is always visible. */
+@media (hover: hover) {
+  .recipeCard:hover .deleteBtn,
+  .recipeCard:focus-within .deleteBtn {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+@media (hover: none) {
+  .deleteBtn {
+    display: none;
+  }
 }

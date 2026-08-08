@@ -170,11 +170,15 @@ export function NotificationPanel() {
                     return (
                       <div
                         key={item.id}
-                        className={`${styles.row} ${isNew(item) ? styles.rowNew : ""}`}
-                        onClick={() => {
-                          handleClose();
-                          window.location.href = `/user/${item.actor_username}`;
-                        }}>
+                        className={`${styles.row} ${isNew(item) ? styles.rowNew : ""}`}>
+                        {/* A real link rather than a div onClick: reachable by
+                            keyboard, and a client route instead of a reload. */}
+                        <Link
+                          href={`/user/${item.actor_username}`}
+                          className={styles.rowOpenLink}
+                          aria-label={`View @${item.actor_username}'s profile`}
+                          onClick={handleClose}
+                        />
                         <div className={styles.followAvatar}>
                           {item.actor_username[0].toUpperCase()}
                         </div>
@@ -213,10 +217,14 @@ export function NotificationPanel() {
                   return (
                     <div
                       key={item.id}
-                      className={`${styles.row} ${isNew(item) ? styles.rowNew : ""}`}
-                      onClick={() =>
-                        window.open(item.url, "_blank", "noopener,noreferrer")
-                      }>
+                      className={`${styles.row} ${isNew(item) ? styles.rowNew : ""}`}>
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.rowOpenLink}
+                        aria-label={`Open ${item.title}`}
+                      />
                       {item.thumbnail_url ? (
                         <RecipeThumbnail
                           src={item.thumbnail_url}

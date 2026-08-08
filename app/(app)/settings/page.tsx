@@ -31,6 +31,8 @@ function SettingsContent() {
 
   return (
     <>
+      <h1 className={styles.pageTitle}>Settings</h1>
+
       {errorParam === "username-required" && (
         <p className={styles.errorBanner}>
           You need to set a username before you can view your profile.

@@ -72,7 +72,7 @@ export default function UsersPage() {
   return (
     <div className={styles.page}>
       <div className={styles.pageHeader}>
-        <h1></h1>
+        <h1 className={styles.pageTitle}>People</h1>
         <div className={styles.searchWrap}>
           <Search size={15} className={styles.searchIcon} />
           <input
@@ -101,12 +101,15 @@ export default function UsersPage() {
             const initial = displayName[0].toUpperCase();
 
             return (
-              <li
-                key={u.clerk_user_id}
-                className={styles.card}
-                onClick={() =>
-                  u.username ? router.push(`/user/${u.username}`) : undefined
-                }>
+              <li key={u.clerk_user_id} className={styles.card}>
+                {u.username && (
+                  <button
+                    type="button"
+                    className={styles.cardOpenBtn}
+                    onClick={() => router.push(`/user/${u.username}`)}
+                    aria-label={`View ${displayName}'s profile`}
+                  />
+                )}
                 <div className={styles.avatar}>
                   {u.image_url ? (
                     <img

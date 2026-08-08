@@ -5,6 +5,7 @@
 .trigger {
   display: flex;
   align-items: center;
+  min-height: 44px;
   padding: 0.375rem 0.75rem 0.375rem 0.375rem;
   background: var(--surface);
   border: 1.5px solid var(--border);

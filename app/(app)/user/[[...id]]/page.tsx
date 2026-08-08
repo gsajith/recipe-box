@@ -257,8 +257,16 @@ export default function ProfilePage() {
               expanded
                 ? styles.recipesContainerExpanded
                 : styles.recipesContainerClickable
-            }`}
-            onClick={!expanded ? handleExpand : undefined}>
+            }`}>
+            {!expanded && fanRecipes.length > 0 && (
+              <button
+                type="button"
+                className={styles.deckOpenBtn}
+                onClick={handleExpand}
+                aria-expanded={false}
+                aria-label={`Show all ${recipeCount} saved recipes`}
+              />
+            )}
             <div className={styles.recipesBadge}>
               <span>
                 {recipeCount} recipe{recipeCount !== 1 ? "s" : ""} saved
