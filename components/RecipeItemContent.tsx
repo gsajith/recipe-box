@@ -28,17 +28,18 @@ export function RecipeItemContent({
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const deleteTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Grid cards have room for two tags. Showing the first two by array order
-  // meant nearly every card read "dinner · lunch" — the tags that say least
-  // because almost everything carries them. Show the rarest two instead, so
-  // the chips carry the word you'd actually search your memory for.
+  // Showing the first tags by array order meant nearly every card read
+  // "dinner · lunch" — the tags that say least, because almost everything
+  // carries them. Rank by rarity instead, so the chips carry the word you'd
+  // actually search your memory for. List rows are wider, so they show more,
+  // but they were still dumping the raw array in storage order.
   const shownTags = useMemo(() => {
     const tags = recipe.tags ?? [];
-    if (viewMode === "list") return tags;
-    if (!tagCounts) return tags.slice(0, 2);
+    const limit = viewMode === "list" ? 4 : 2;
+    if (!tagCounts) return tags.slice(0, limit);
     return [...tags]
       .sort((a, b) => (tagCounts[a] ?? 0) - (tagCounts[b] ?? 0))
-      .slice(0, 2);
+      .slice(0, limit);
   }, [recipe.tags, viewMode, tagCounts]);
 
   const handleDelete = (e: MouseEvent<HTMLButtonElement>) => {
@@ -86,7 +87,9 @@ export function RecipeItemContent({
         className={`${styles.content} ${
           viewMode === "list" ? styles.contentList : ""
         }`}>
-        <h3
+        {/* h2, not h3: the page's only other heading is the h1 above the list,
+            so an h3 here skipped a level. */}
+        <h2
           className={`${styles.title} ${
             viewMode === "list" ? styles.titleList : ""
           }`}>
@@ -95,7 +98,7 @@ export function RecipeItemContent({
           {viewMode === "list" && (
             <SourceBadge url={recipe.url} className={styles.sourceBadgeList} />
           )}
-        </h3>
+        </h2>
         {(recipe.cook_time || recipe.servings) && (
           <div className={styles.meta}>
             {recipe.cook_time && (

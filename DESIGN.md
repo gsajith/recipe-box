@@ -8,6 +8,7 @@ colors:
   enamel-green: "#234b39"
   enamel-green-deep: "#132A1F"
   terracotta: "#C86C44"
+  terracotta-strong: "#B25B39"
   terracotta-deep: "#A14F34"
   butter-yellow: "#F5C73A"
   chili-red: "#C94832"
@@ -168,9 +169,13 @@ A warm, food-adjacent palette: cream and oat for ground, one deep green for ever
 
 **The Green House Rule.** Deep green is the house — structure, chrome, identity, selected state. It can cover whole regions (nav, hero, profile slab) and it never asks for a click by itself.
 
-**The One Door Rule.** Terracotta is the door. It appears on the single action that moves the user forward, and it appears *once* per view. A screen with two terracotta buttons has one too many; demote the lesser one to the ghost pill.
+**The One Door Rule.** Terracotta is the door: the single action that moves the user forward. It appears **once per region** — a header, a banner, a card, a modal, a row in a list. Two terracotta buttons competing inside the same region is one too many; demote the lesser to the ghost pill.
 
-> **Known AA exception, accepted deliberately.** White label text on terracotta measures **3.69:1** — below the 4.5:1 WCAG AA bar for normal-size text (it clears the 3:1 large-text bar). Measured 2026-08-07 on Add Recipe, Follow, Follow back, and the clipboard Save button. The hue is a brand commitment and takes precedence here; darkening the fill to `--orange-dark` (5.1:1) was considered and declined. Do not "fix" this by shifting the terracotta. Do make sure every terracotta button is also identifiable by shape, position, and label rather than color alone, and prefer large/bold label type where the layout allows.
+*Narrowed 2026-08-08.* The rule previously said "once per view," which the shipped product contradicted everywhere and the component table below contradicted on paper: the recipe list carries Add Recipe in its header while the clipboard banner carries Save, and `/users` carries a Follow on every row. Both are correct — each is the forward action of its own region, and a follow list with one terracotta button would be arbitrary about which person got it. What the rule forbids is two doors bidding for the same decision. When regions stack, distance and containment do the disambiguating: the banner is a separate object at the other end of the screen, not a second option inside the header.
+
+> **Two terracottas, and the size of the label decides which.** White on `--orange` (`#C86C44`) measures **3.69:1**. That clears the 3:1 WCAG large-text bar and fails the 4.5:1 normal-text bar, so it is only legitimate on labels that are **≥18.66px bold or ≥24px** — the detail modal's "Open recipe" door (19.2px/700) and the landing CTA (19.2px/700). Everything smaller uses `--orange-strong` (`#B25B39`, **4.73:1**): Add Recipe, Follow, Follow back, the clipboard Save, both share-page saves, and the settings Save.
+>
+> *Revised 2026-08-08.* The exception recorded on 2026-08-07 was written as though it covered every terracotta button. It never did — it was measured on Add Recipe (15.2px/600), Follow (14px/600) and the clipboard Save (13.1px/700), none of which reach the large-text bar, so those were plain AA failures rather than an accepted trade. Both hues are terracotta and read as the same door; only the one carrying small type is tuned. Choose by measuring the label, not by eye. And keep every terracotta button identifiable by shape, position and label rather than by color alone.
 
 **The Inversion Rule.** On green or terracotta grounds, controls do not switch palettes — they invert into white-alpha tiers: `rgba(255,255,255,0.15)` fill, `rgba(255,255,255,0.3–0.4)` border, `rgba(255,255,255,0.85)` text, solid white when active. The profile page and the landing nav both run on this; any new surface on a colored ground must too.
 
@@ -297,7 +302,8 @@ This vocabulary — oversized radii, overlapping planes, physical stacking — b
 
 ### Do:
 - **Do** put white cards on the cream ground (`#FAF7EF`). Cream is the page; white means "object."
-- **Do** reserve terracotta for the one action that moves the user forward, and use exactly one per view (The One Door Rule).
+- **Do** reserve terracotta for the action that moves the user forward, and use exactly one per region (The One Door Rule).
+- **Do** pick the terracotta by measuring the label: `--orange` at ≥18.66px bold or ≥24px, `--orange-strong` everywhere else.
 - **Do** set names in Playfair and everything else in DM Sans (The Naming Rule).
 - **Do** keep borders at 1.5px and visible. The edge is the form (The Visible Edge Rule).
 - **Do** express recessed states tonally with oat (`#EEE8DC`) rather than with inset shadows.

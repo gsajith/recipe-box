@@ -3,7 +3,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.375rem;
-  background: var(--orange);
+  background: var(--orange-strong);
   color: white;
   border: none;
   border-radius: var(--radius-full);
@@ -136,10 +136,73 @@
 }
 
 .error {
+  margin: -1rem 0 0 0;
+}
+
+.errorMessage {
   color: var(--danger);
-  margin: -1rem 0 0.5rem 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* What the user can do about it, in the product's voice — not the server's. */
+.errorDetail {
+  margin-top: 0.25rem;
+  color: var(--text-secondary);
   font-size: 0.8rem;
-  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* The recovery leads. The retry keeps its place in the row below, demoted to a
+   ghost so exactly one terracotta door is open (The One Door Rule). */
+.saveAnywayBtn {
+  width: 100%;
+  padding: 0.875rem;
+  margin-top: -0.5rem;
+  background: var(--orange-strong);
+  color: white;
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.saveAnywayBtn:hover:not(:disabled) {
+  background: var(--orange-dark);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.saveAnywayBtn:disabled {
+  background: var(--surface-variant);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
+.retryBtn {
+  flex: 1;
+  padding: 0.875rem;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-full);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.retryBtn:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.retryBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .buttonGroup {
@@ -168,7 +231,7 @@
 .submitBtn {
   flex: 1;
   padding: 0.875rem;
-  background: var(--orange);
+  background: var(--orange-strong);
   color: white;
   border: none;
   border-radius: var(--radius-full);

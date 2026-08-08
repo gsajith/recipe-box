@@ -9,7 +9,6 @@ export const MEAL_TYPE_TAGS = [
   "dinner",
   "dessert",
   "snack",
-  "ingredient",
 ] as const;
 
 export const DIFFICULTY_TAGS = ["easy", "medium", "hard"] as const;

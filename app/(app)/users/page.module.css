@@ -31,6 +31,7 @@
 
 .searchInput {
   width: 100%;
+  min-height: 44px;
   padding: 0.5rem 0.75rem 0.5rem 2.25rem;
   border: 1.5px solid var(--border);
   border-radius: var(--radius-full);
@@ -65,13 +66,16 @@
   margin: 0;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
+  /* Cards size to their content. Stretching them left a hole under anyone
+     whose saves have no cover yet — routine, per PRODUCT.md principle 4. */
+  align-items: start;
   gap: 0.75rem;
 }
 
 /* ── Card ── */
 
 .pageTitle {
-  font-family: var(--font-serif), Georgia, serif;
+  font-family: var(--font-stack-serif);
   font-size: 1.75rem;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -81,14 +85,20 @@
 .card {
   position: relative;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 0.875rem;
-  padding: 1rem 1.125rem;
+  padding: 1rem 1.125rem 1.125rem;
   background: var(--surface);
   border: 1.5px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
   transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
 }
 
 .card:hover,
@@ -115,11 +125,28 @@
   outline-offset: -3px;
 }
 
-.actions,
-.followBtn,
-.followingBadge {
-  position: relative;
-  z-index: 1;
+/* ── Covers ─────────────────────────────────────────────────────────────────
+   Three of the person's most recent saves. The directory's job is to answer
+   "should I follow this person?", and twelve counters never did — their food
+   does. Decorative here (the names are on their profile), so alt is empty and
+   the strip is aria-hidden: the card already has one accessible name. */
+
+/* Flex, not a 3-column grid: most people have fewer than three saves with a
+   cover, and fixed columns left them with holes. However many there are, they
+   share the width at one fixed height. */
+.covers {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.cover {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 76px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: var(--surface-variant);
 }
 
 /* ── Avatar ── */
@@ -179,43 +206,27 @@
 }
 
 .stats {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  flex-wrap: wrap;
   font-size: 0.75rem;
   color: var(--text-secondary);
   margin-top: 0.25rem;
 }
 
-.stats strong {
-  color: var(--text-primary);
-  font-weight: 600;
-}
-
 .statDot {
-  opacity: 0.35;
+  margin: 0 0.3rem;
+  color: var(--text-faint);
 }
 
 /* ── Actions area ── */
 
+/* Above the stretched card overlay so the follow control stays clickable. */
 .actions {
+  position: relative;
+  z-index: 1;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 0.35rem;
-}
-
-.followsYouBadge {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  background: var(--surface-variant);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-full);
-  padding: 0.15rem 0.5rem;
-  white-space: nowrap;
 }
 
 .youBadge {
@@ -232,51 +243,9 @@
   white-space: nowrap;
 }
 
-.followingBadge {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  white-space: nowrap;
-  padding: 0.35rem 0;
-}
-
-/* ── Follow button ── */
-
-.followBtn {
-  flex-shrink: 0;
-  min-height: 44px;
-  padding: 0.35rem 1rem;
-  border-radius: var(--radius-full);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-  font-family: inherit;
-  background: var(--orange);
-  color: white;
-}
-
-.followBtn:hover:not(:disabled) {
-  background: var(--orange-dark);
-}
-
-.followBtn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.followBtnFollowing {
-  background: var(--surface-variant);
-  color: var(--text-primary);
-  border: 1.5px solid var(--border);
-}
-
-.followBtnFollowing:hover:not(:disabled) {
-  background: var(--primary);
-  color: white;
-  border-color: var(--primary);
-}
+/* The follow control is the shared FollowButton now — "Following" used to be a
+   non-interactive <span>, so this was the one place in the product where you
+   could follow someone and never take it back. */
 
 /* ── Responsive ── */
 
@@ -295,14 +264,3 @@
   }
 }
 
-@media (max-width: 480px) {
-  .stats {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0;
-  }
-
-  .statDot {
-    display: none;
-  }
-}

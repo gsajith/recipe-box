@@ -24,7 +24,12 @@ export async function GET() {
     clerkUsers,
   ] = await Promise.all([
     supabase.from("follows").select("follower_id, following_id"),
-    supabase.from("recipes").select("user_id"),
+    // Newest first, so the same pass that counts a person's recipes can also
+    // pick the covers the directory shows them by.
+    supabase
+      .from("recipes")
+      .select("user_id, title, thumbnail_url, created_at")
+      .order("created_at", { ascending: false }),
     supabase
       .from("follows")
       .select("following_id")
@@ -40,8 +45,19 @@ export async function GET() {
   }
 
   const recipeCountMap: Record<string, number> = {};
+  /** A few recent covers per person — the directory's actual content. */
+  const previewMap: Record<
+    string,
+    { title: string; thumbnail_url: string }[]
+  > = {};
+  const PREVIEWS_PER_USER = 3;
   for (const r of allRecipes ?? []) {
     recipeCountMap[r.user_id] = (recipeCountMap[r.user_id] ?? 0) + 1;
+    if (!r.thumbnail_url) continue;
+    const previews = (previewMap[r.user_id] ??= []);
+    if (previews.length < PREVIEWS_PER_USER) {
+      previews.push({ title: r.title, thumbnail_url: r.thumbnail_url });
+    }
   }
 
   const iFollowSet = new Set((myFollows ?? []).map((f) => f.following_id));
@@ -63,6 +79,7 @@ export async function GET() {
     follower_count: followerCountMap[p.clerk_user_id] ?? 0,
     following_count: followingCountMap[p.clerk_user_id] ?? 0,
     recipe_count: recipeCountMap[p.clerk_user_id] ?? 0,
+    recent_recipes: previewMap[p.clerk_user_id] ?? [],
     is_followed_by_me: iFollowSet.has(p.clerk_user_id),
     follows_me: followsMeSet.has(p.clerk_user_id),
   }));

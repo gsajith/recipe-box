@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import { FollowButton } from "@/components/FollowButton";
 import { RecipeFilterPanel } from "@/components/RecipeFilterPanel";
+import { RecipeDetail } from "@/components/RecipeDetail";
 import RecipeThumbnail from "@/components/RecipeThumbnail";
 import styles from "./page.module.css";
 import recipeStyles from "@/components/RecipeList.module.css";
@@ -43,6 +44,7 @@ export default function ProfilePage() {
   const [followsMe, setFollowsMe] = useState(false);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
 
   const fanCardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const expandedRef = useRef<HTMLDivElement>(null);
@@ -161,6 +163,27 @@ export default function ProfilePage() {
   }
 
   const isOwnProfile = !targetUsername || targetUsername === myUsername;
+
+  /** Your own profile is still your collection, so the modal edits for real. */
+  const handleUpdateTags = async (recipeId: string, tags: string[]) => {
+    const res = await fetch(`/api/recipes/${recipeId}/tags`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tags }),
+    });
+    if (!res.ok) throw new Error("Failed to update tags");
+    setRecipes((prev) =>
+      prev.map((r) => (r.id === recipeId ? { ...r, tags } : r)),
+    );
+    setSelectedRecipe((prev) => (prev ? { ...prev, tags } : null));
+  };
+
+  const handleDeleteRecipe = async (recipeId: string) => {
+    const res = await fetch(`/api/recipes/${recipeId}`, { method: "DELETE" });
+    if (!res.ok) throw new Error("Failed to delete recipe");
+    setRecipes((prev) => prev.filter((r) => r.id !== recipeId));
+    setSelectedRecipe(null);
+  };
 
   // Display name: own profile uses our API data; other profiles use their profile data
   const displayName = isOwnProfile
@@ -333,9 +356,12 @@ export default function ProfilePage() {
             {/* Expanded view — search, filters, full grid */}
             {expanded && (
               <div ref={expandedRef} className={styles.expandedSection}>
+                {/* The same card that opens a modal on the recipe list used to
+                    call window.open here, so the identical object behaved two
+                    ways depending on which page you found it on. */}
                 <RecipeFilterPanel
                   recipes={recipes}
-                  onRecipeSelect={(recipe) => window.open(recipe.url, "_blank")}
+                  onRecipeSelect={setSelectedRecipe}
                   theme="inverted"
                   hideDeleteButton
                   controlsClassName={styles.expandedControls}
@@ -358,6 +384,16 @@ export default function ProfilePage() {
             <span className={styles.followsYouBadge}>Follows you</span>
           )}
         </div>
+      )}
+
+      {selectedRecipe && (
+        <RecipeDetail
+          recipe={selectedRecipe}
+          readOnly={!isOwnProfile}
+          onTagsUpdate={isOwnProfile ? handleUpdateTags : undefined}
+          onDelete={isOwnProfile ? handleDeleteRecipe : undefined}
+          onClose={() => setSelectedRecipe(null)}
+        />
       )}
     </div>
   );

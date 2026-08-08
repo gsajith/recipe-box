@@ -1,4 +1,8 @@
 .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
   padding: 0.5rem 1.25rem;
   border-radius: var(--radius-full);
   font-size: 0.875rem;
@@ -7,6 +11,7 @@
   cursor: pointer;
   transition: all 0.18s ease;
   letter-spacing: 0.01em;
+  white-space: nowrap;
 }
 
 .btn:disabled {
@@ -15,7 +20,7 @@
 }
 
 .follow {
-  background: var(--orange);
+  background: var(--orange-strong);
   color: white;
 }
 
@@ -31,4 +36,26 @@
 .unfollow:hover:not(:disabled) {
   background: var(--primary-dark);
   color: rgba(255, 255, 255, 0.85);
+}
+
+/* On a white card the inverted tiers have nothing to invert against: the door
+   is the ordinary terracotta pill, and following is the ghost. */
+.followLight {
+  background: var(--orange-strong);
+  color: white;
+}
+
+.followLight:hover:not(:disabled) {
+  background: var(--orange-dark);
+}
+
+.unfollowLight {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text-secondary);
+}
+
+.unfollowLight:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
 }

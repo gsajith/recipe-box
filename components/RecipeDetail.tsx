@@ -30,7 +30,14 @@ function sourceHostname(rawUrl: string): string | null {
 
 interface RecipeDetailProps {
   recipe: Recipe;
-  onTagsUpdate: (recipeId: string, tags: string[]) => Promise<void>;
+  /**
+   * Someone else's recipe: the same card, the same modal, none of the controls
+   * that would edit a collection that isn't yours. Profile cards used to call
+   * `window.open` instead of opening this, so the identical card behaved one
+   * way on the recipe list and another on a profile.
+   */
+  readOnly?: boolean;
+  onTagsUpdate?: (recipeId: string, tags: string[]) => Promise<void>;
   onMetadataUpdate?: (
     recipeId: string,
     title: string,
@@ -46,6 +53,7 @@ interface RecipeDetailProps {
 
 export function RecipeDetail({
   recipe,
+  readOnly = false,
   onTagsUpdate,
   onMetadataUpdate,
   onDelete,
@@ -108,7 +116,7 @@ export function RecipeDetail({
     setTags(updatedTags);
     setIsSaving(true);
     try {
-      await onTagsUpdate(recipe.id, updatedTags);
+      await onTagsUpdate?.(recipe.id, updatedTags);
     } finally {
       setIsSaving(false);
       tagInputRef.current?.focus();
@@ -196,33 +204,20 @@ export function RecipeDetail({
             {shareCopied && (
               <span className={styles.copiedLabel}>Link copied!</span>
             )}
-            <button
-              type="button"
-              className={`${styles.shareBtn} ${shareCopied ? styles.shareBtnCopied : ""}`}
-              onClick={handleShare}
-              aria-label={shareCopied ? "Link copied" : "Copy share link"}
-              title={shareCopied ? "Link copied!" : "Share recipe"}>
-              {shareCopied ? (
-                <Check size={16} aria-hidden="true" />
-              ) : (
-                <Share size={16} aria-hidden="true" />
-              )}
-            </button>
-            <button
-              type="button"
-              className={`${styles.deleteBtn} ${confirmingDelete ? styles.deleteBtnConfirming : ""}`}
-              onClick={handleDelete}
-              aria-label={
-                confirmingDelete
-                  ? `Confirm delete of ${title}`
-                  : `Delete ${title}`
-              }
-              title={
-                confirmingDelete ? "Tap again to delete" : "Delete recipe"
-              }>
-              <Trash2 size={16} aria-hidden="true" />
-              {confirmingDelete && <span>Delete?</span>}
-            </button>
+            {!readOnly && (
+              <button
+                type="button"
+                className={`${styles.shareBtn} ${shareCopied ? styles.shareBtnCopied : ""}`}
+                onClick={handleShare}
+                aria-label={shareCopied ? "Link copied" : "Copy share link"}
+                title={shareCopied ? "Link copied!" : "Share recipe"}>
+                {shareCopied ? (
+                  <Check size={16} aria-hidden="true" />
+                ) : (
+                  <Share size={16} aria-hidden="true" />
+                )}
+              </button>
+            )}
             <button
               type="button"
               className={styles.closeBtn}
@@ -341,14 +336,16 @@ export function RecipeDetail({
             <>
               <div className={styles.titleRow}>
                 <h2>{title}</h2>
-                <button
-                  type="button"
-                  onClick={() => setIsEditingMetadata(true)}
-                  className={styles.editBtn}
-                  aria-label="Edit recipe details"
-                  title="Edit recipe">
-                  <Edit2 size={16} aria-hidden="true" />
-                </button>
+                {!readOnly && (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingMetadata(true)}
+                    className={styles.editBtn}
+                    aria-label="Edit recipe details"
+                    title="Edit recipe">
+                    <Edit2 size={16} aria-hidden="true" />
+                  </button>
+                )}
               </div>
               {(cookTime || servings) && (
                 <div className={styles.metaRow}>
@@ -395,17 +392,22 @@ export function RecipeDetail({
           {/* Tags are a filing job, not a cooking job. At rest this is a
               read-only row; the editor is one tap away for when you're
               actually filing. */}
+          {/* On someone else's recipe an empty tag section would prompt you to
+              file a recipe you don't own. */}
+          {(!readOnly || tags.length > 0) && (
           <div className={styles.tagsSection}>
             <div className={styles.tagsHeader}>
               <span className={styles.notesLabel}>Tags</span>
-              <button
-                type="button"
-                className={styles.tagsToggleBtn}
-                onClick={() => setIsEditingTags((v) => !v)}
-                aria-expanded={isEditingTags}>
-                <TagIcon size={13} aria-hidden="true" />
-                {isEditingTags ? "Done" : tags.length ? "Edit" : "Add tags"}
-              </button>
+              {!readOnly && (
+                <button
+                  type="button"
+                  className={styles.tagsToggleBtn}
+                  onClick={() => setIsEditingTags((v) => !v)}
+                  aria-expanded={isEditingTags}>
+                  <TagIcon size={13} aria-hidden="true" />
+                  {isEditingTags ? "Done" : tags.length ? "Edit" : "Add tags"}
+                </button>
+              )}
             </div>
 
             {!isEditingTags &&
@@ -498,6 +500,27 @@ export function RecipeDetail({
               </>
             )}
           </div>
+          )}
+
+          {/* Destruction used to live 8px from Share, over the photograph, at
+              40×38 — and it was the only delete a phone had. It belongs at the
+              end of the modal, nowhere near a button you press on purpose. */}
+          {!readOnly && (
+          <div className={styles.dangerZone}>
+            <button
+              type="button"
+              className={`${styles.deleteRecipeBtn} ${confirmingDelete ? styles.deleteRecipeBtnConfirming : ""}`}
+              onClick={handleDelete}
+              aria-label={
+                confirmingDelete
+                  ? `Confirm delete of ${title}`
+                  : `Delete ${title}`
+              }>
+              <Trash2 size={15} aria-hidden="true" />
+              {confirmingDelete ? "Tap again to delete" : "Delete recipe"}
+            </button>
+          </div>
+          )}
         </div>
       </div>
     </div>

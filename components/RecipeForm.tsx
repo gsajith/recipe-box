@@ -4,48 +4,58 @@ import { useId, useState } from "react";
 import { Plus, X } from "lucide-react";
 import styles from "./RecipeForm.module.css";
 import { useModalDialog } from "@/lib/useModalDialog";
+import { canSaveAnyway, failureCopy } from "@/lib/saveRecipe";
 
 interface RecipeFormProps {
-  onSubmit: (url: string) => Promise<void>;
+  onSubmit: (
+    url: string,
+    options?: { allowFallback?: boolean },
+  ) => Promise<void>;
   isLoading?: boolean;
+}
+
+/** A failure the user can act on, not a string thrown over the wall. */
+interface FormError {
+  message: string;
+  detail?: string;
+  recoverable?: boolean;
 }
 
 export function RecipeForm({ onSubmit, isLoading = false }: RecipeFormProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [url, setUrl] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState<FormError | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+  const submit = async (allowFallback: boolean) => {
+    setError(null);
 
     if (!url.trim()) {
-      setError("Please enter a URL");
+      setError({ message: "Please enter a URL" });
       return;
     }
 
     try {
       new URL(url);
     } catch {
-      setError("Please enter a valid URL");
+      setError({ message: "Please enter a valid URL" });
       return;
     }
 
     try {
-      await onSubmit(url);
+      await onSubmit(url, { allowFallback });
       setUrl("");
       setIsOpen(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save recipe");
+      const copy = failureCopy(err);
+      setError({ ...copy, recoverable: canSaveAnyway(err) });
     }
   };
 
   const handleClose = () => {
     setUrl("");
-    setError("");
+    setError(null);
     setIsOpen(false);
   };
-
 
   return (
     <>
@@ -60,7 +70,11 @@ export function RecipeForm({ onSubmit, isLoading = false }: RecipeFormProps) {
           error={error}
           isLoading={isLoading}
           onUrlChange={setUrl}
-          onSubmit={handleSubmit}
+          onSubmit={(e) => {
+            e.preventDefault();
+            submit(false);
+          }}
+          onSaveAnyway={() => submit(true)}
           onClose={handleClose}
         />
       )}
@@ -75,13 +89,15 @@ function AddRecipeDialog({
   isLoading,
   onUrlChange,
   onSubmit,
+  onSaveAnyway,
   onClose,
 }: {
   url: string;
-  error: string;
+  error: FormError | null;
   isLoading: boolean;
   onUrlChange: (value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
+  onSaveAnyway: () => void;
   onClose: () => void;
 }) {
   const dialogRef = useModalDialog<HTMLDivElement>(onClose);
@@ -115,9 +131,16 @@ function AddRecipeDialog({
             <label htmlFor="url" className={styles.label}>
               Recipe or Video URL
             </label>
+            {/* The whole flow is pasting a link on a phone; autoFocus opened
+                the keyboard but the alphabetic one. */}
             <input
               id="url"
               type="text"
+              inputMode="url"
+              autoComplete="url"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
               value={url}
               onChange={(e) => onUrlChange(e.target.value)}
               placeholder="https://example.com/recipe..."
@@ -130,9 +153,24 @@ function AddRecipeDialog({
           </div>
 
           {error && (
-            <p id={errorId} className={styles.error} role="alert">
-              {error}
-            </p>
+            <div id={errorId} className={styles.error} role="alert">
+              <p className={styles.errorMessage}>{error.message}</p>
+              {error.detail && (
+                <p className={styles.errorDetail}>{error.detail}</p>
+              )}
+            </div>
+          )}
+
+          {/* Extraction failing is routine; throwing the link away is not.
+              The recovery leads, and the retry keeps its place below. */}
+          {error?.recoverable && (
+            <button
+              type="button"
+              className={styles.saveAnywayBtn}
+              onClick={onSaveAnyway}
+              disabled={isLoading}>
+              {isLoading ? "Saving…" : "Save the link anyway"}
+            </button>
           )}
 
           <div className={styles.buttonGroup}>
@@ -141,9 +179,15 @@ function AddRecipeDialog({
             </button>
             <button
               type="submit"
-              className={styles.submitBtn}
+              className={
+                error?.recoverable ? styles.retryBtn : styles.submitBtn
+              }
               disabled={isLoading}>
-              {isLoading ? "Adding Recipe..." : "Add Recipe"}
+              {isLoading
+                ? "Adding Recipe..."
+                : error?.recoverable
+                  ? "Try again"
+                  : "Add Recipe"}
             </button>
           </div>
         </form>
