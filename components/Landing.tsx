@@ -84,7 +84,11 @@ export function Landing() {
       </nav>
 
       <header className={styles.hero}>
-        <div className={styles.heroInner}>
+        {/* Without a showcase collection to draw on there is nothing to prove
+            with, so the hero becomes a single column rather than reserving an
+            empty half. */}
+        <div
+          className={`${styles.heroInner} ${hero ? "" : styles.heroInnerSolo}`}>
           <div className={styles.heroCopy}>
             <h1 className={styles.heroTitle}>
               Found it on a reel.
@@ -105,8 +109,8 @@ export function Landing() {
 
           {/* The pitch is the transformation, so the page performs it: a link
               on one side, the real card it becomes on the other. */}
-          <div className={styles.heroProof} aria-hidden={!hero}>
-            {hero && (
+          {hero && (
+            <div className={styles.heroProof}>
               <>
                 <div className={styles.sourceChip}>
                   <SourceBadge url={hero.url} className={styles.sourceMark} />
@@ -129,8 +133,8 @@ export function Landing() {
                   <ShowcaseCard recipe={hero} />
                 </div>
               </>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </header>
 

@@ -73,6 +73,12 @@
   margin: 0 auto;
 }
 
+/* No showcase collection to draw on — don't reserve the empty half. */
+.heroInnerSolo {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 760px;
+}
+
 .heroTitle {
   font-family: var(--font-serif), Georgia, serif;
   font-size: clamp(2.75rem, 6.5vw, 4.75rem);
