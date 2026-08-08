@@ -28,6 +28,8 @@ interface RecipeListProps {
   onClearFilters?: () => void;
   /** How many recipes carry each tag, for ranking card chips. */
   tagCounts?: Record<string, number>;
+  /** Changes when the filters change, so paging restarts on a new result set. */
+  resetKey?: string;
 }
 
 export function RecipeList({
@@ -38,6 +40,7 @@ export function RecipeList({
   isFiltered = false,
   onClearFilters,
   tagCounts,
+  resetKey,
 }: RecipeListProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -54,10 +57,14 @@ export function RecipeList({
 
   // Narrowing the list has to start it over — otherwise filtering down to six
   // results would still be holding a page count from a browse of eighty.
-  const firstId = recipes[0]?.id;
+  //
+  // Keyed on the filters rather than on the array, because those are different
+  // events that look identical from here: deleting a recipe also shortens the
+  // list, and collapsing someone back to the first 24 after they deleted
+  // something eighty deep would be its own small betrayal.
   useEffect(() => {
     setVisibleCount(PAGE_SIZE);
-  }, [recipes.length, firstId]);
+  }, [resetKey]);
 
   const visible = useMemo(
     () => recipes.slice(0, visibleCount),

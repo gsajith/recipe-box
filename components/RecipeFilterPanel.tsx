@@ -191,6 +191,15 @@ export function RecipeFilterPanel({
     selectedDifficulty,
   ]);
 
+  /** Identifies the current result set, so the list knows when to page anew. */
+  const filterKey = [
+    searchQuery.trim(),
+    selectedTags.join(","),
+    selectedSource,
+    selectedMeal,
+    selectedDifficulty,
+  ].join("|");
+
   function handleTagToggle(tag: string) {
     setSelectedTags((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
@@ -361,6 +370,7 @@ export function RecipeFilterPanel({
             onRecipeDelete={onRecipeDelete ?? (async () => {})}
             viewMode={viewMode}
             tagCounts={tagCounts}
+            resetKey={filterKey}
             isFiltered={hasActiveFilters || searchQuery.trim().length > 0}
             onClearFilters={() => {
               clearAllFilters();
