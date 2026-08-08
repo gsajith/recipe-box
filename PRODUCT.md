@@ -28,14 +28,13 @@ Success is a user whose whole recipe life lives here: they save without thinking
 
 ## Positioning
 
-**Open decision — do not commit design work to a positioning claim yet.**
+**Settled 2026-08-08: both, capture first.**
 
-PLAN.md (2026-04-21) asserts the edge is "social graph + AI extraction," and the code supports both. The user has not confirmed that as durable positioning. Two live candidates:
+Zero-friction capture leads — Reel, video, or blog saved in one action with no manual entry, which no competitor matches across video sources. The social graph is the second act, not the headline: real today (follow, feed, share-with-attribution) but thin enough that leading with it would overclaim.
 
-- The social graph — following real people and seeing their saves — is the moat; AI extraction is the enabler.
-- Zero-friction capture — Reel, video, or blog, saved in one action with no manual entry — is the claim; social is additive.
+This resolves the open decision recorded at init. PLAN.md (2026-04-21) had asserted "social graph + AI extraction" without ranking them; capture now carries the hero and the primary CTA on every persuade surface, and the graph appears after it.
 
-Until this is settled, surfaces may describe what the product truthfully does. They may not build a headline, hero, or narrative on a hierarchy between these two that has not been chosen.
+Surfaces must still not invent evidence for either claim — see Evidence on Hand.
 
 ## Operating Context
 

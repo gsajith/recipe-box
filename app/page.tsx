@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Archive, Tag, Search, Clipboard, X } from "lucide-react";
+import { Clipboard, X } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
+import { Landing } from "@/components/Landing";
 import { RecipeForm } from "@/components/RecipeForm";
 import { AppHeader } from "@/components/AppHeader";
 import { RecipeDetail } from "@/components/RecipeDetail";
@@ -331,89 +332,7 @@ export default function Home() {
   }
 
   if (!user) {
-    return (
-      <div className={styles.landingPage}>
-        <nav className={styles.landingNav}>
-          <span className={styles.landingLogo}>RecipeBox</span>
-          <a href="/sign-in" className={styles.navSignIn}>
-            Sign in &rarr;
-          </a>
-        </nav>
-
-        <section className={styles.hero}>
-          <div className={styles.heroInner}>
-            <span className={styles.heroBadge}>Free to use</span>
-            <h1 className={styles.heroTitle}>
-              Every recipe
-              <br />
-              you love,
-              <br />
-              <em>beautifully saved.</em>
-            </h1>
-            <p className={styles.heroSubtitle}>
-              Paste any recipe URL and we&apos;ll save it instantly — title,
-              photo, and source included. Tag it, search it, find it whenever
-              you&apos;re ready to cook.
-            </p>
-            <a href="/sign-in" className={styles.ctaButton}>
-              Start saving recipes
-            </a>
-          </div>
-        </section>
-
-        <section className={styles.featuresSection}>
-          <div className={styles.featuresSectionInner}>
-            <div className={styles.featuresSectionHeader}>
-              <span className={styles.featuresEyebrow}>How it works</span>
-              <h2 className={styles.featuresSectionTitle}>Simple by design</h2>
-            </div>
-            <div className={styles.featuresGrid}>
-              <div className={styles.featureCard}>
-                <div className={styles.featureIconWrap}>
-                  <Archive size={20} />
-                </div>
-                <span className={styles.featureNum}>01</span>
-                <h3>Save from anywhere</h3>
-                <p>
-                  Paste a link from any cooking site. We fetch the title, photo,
-                  and source automatically.
-                </p>
-              </div>
-              <div className={styles.featureCard}>
-                <div className={styles.featureIconWrap}>
-                  <Tag size={20} />
-                </div>
-                <span className={styles.featureNum}>02</span>
-                <h3>Organize with tags</h3>
-                <p>
-                  Build your own system. Tag by cuisine, meal type, difficulty —
-                  then filter in seconds.
-                </p>
-              </div>
-              <div className={styles.featureCard}>
-                <div className={styles.featureIconWrap}>
-                  <Search size={20} />
-                </div>
-                <span className={styles.featureNum}>03</span>
-                <h3>Find it instantly</h3>
-                <p>
-                  Fast search across everything you&apos;ve saved. No more
-                  hunting through browser bookmarks.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className={styles.landingCta}>
-          <h2>Ready to start cooking?</h2>
-          <p>Build your recipe collection in minutes.</p>
-          <a href="/sign-in" className={styles.ctaButton}>
-            Sign in with Google
-          </a>
-        </section>
-      </div>
-    );
+    return <Landing />;
   }
 
   return (

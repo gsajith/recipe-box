@@ -22,7 +22,9 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_APP_URL ?? "https://recipe-box-gs.vercel.app"
   ),
   title: "RecipeBox",
-  description: "Save and manage your favorite recipes",
+  // The marketing line was in the OG tag while the template line was here.
+  description:
+    "Share any link from Instagram, YouTube, or a recipe site and it's saved — photo, cook time and source already filled in.",
   icons: {
     icon: "/favicon.ico",
     apple: "/apple-touch-icon.png",
