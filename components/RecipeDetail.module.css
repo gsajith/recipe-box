@@ -259,45 +259,61 @@
   transition: all 0.2s ease;
 }
 
-/* Sits under the door on someone else's recipe. Ghost, not terracotta — the
-   door is still the one primary in this region. */
-.saveToCollectionBtn {
+/* On someone else's recipe, Save IS the door: it inherits .openRecipeBtn and
+   only overrides what differs. 19.2px/700 keeps it inside the recorded
+   large-text exception that makes white-on---orange legitimate. */
+.saveDoorBtn {
+  border: none;
+  cursor: pointer;
+}
+
+.saveDoorBtnDone {
+  background: var(--surface-variant);
+  color: var(--text-secondary);
+  box-shadow: none;
+  cursor: default;
+}
+
+.saveDoorBtnDone:hover {
+  background: var(--surface-variant);
+  color: var(--text-secondary);
+  transform: none;
+  box-shadow: none;
+}
+
+.saveDoorBtn:disabled {
+  cursor: default;
+}
+
+/* …and Open recipe steps back to the ghost pill it displaced. */
+.openRecipeGhost {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.45rem;
+  gap: 0.5rem;
   width: 100%;
   min-height: 48px;
   margin: -0.5rem 0 1.25rem;
   padding: 0.625rem 1.25rem;
   background: transparent;
   color: var(--primary);
-  border: 1.5px solid var(--primary);
+  border: 1.5px solid var(--border);
   border-radius: var(--radius-full);
   font-size: 1rem;
   font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  text-decoration: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
 }
 
-.saveToCollectionBtn:hover:not(:disabled) {
-  background: var(--primary);
-  color: white;
+.openRecipeGhost:hover {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 6%, transparent);
 }
 
-.saveToCollectionBtnDone {
-  border-color: var(--border);
+.openRecipeGhostHost {
   color: var(--text-secondary);
-  cursor: default;
-}
-
-.saveToCollectionBtnDone:hover {
-  background: transparent;
-  color: var(--text-secondary);
-}
-
-.saveToCollectionBtn:disabled {
-  cursor: default;
+  font-size: 0.85rem;
+  font-weight: 500;
 }
 
 .saveError {

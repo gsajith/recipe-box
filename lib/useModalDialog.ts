@@ -36,8 +36,18 @@ export function useModalDialog<T extends HTMLElement>(onClose: () => void) {
 
     const previouslyFocused = document.activeElement as HTMLElement | null;
 
+    // Visible, not merely present. The modal's chrome swaps by breakpoint —
+    // Back shows on a phone, Close on a desktop — so the first FOCUSABLE match
+    // in DOM order can be `display: none`. Focusing it silently does nothing
+    // and the dialog opens with focus still on <body>. The Tab handler below
+    // already filtered this way; the way in did not.
+    const visible = (el: HTMLElement) =>
+      el.offsetWidth > 0 || el.offsetHeight > 0;
     if (!node.contains(document.activeElement)) {
-      (node.querySelector<HTMLElement>(FOCUSABLE) ?? node).focus();
+      const first = Array.from(
+        node.querySelectorAll<HTMLElement>(FOCUSABLE),
+      ).find(visible);
+      (first ?? node).focus();
     }
 
     // Lock the real scroller. globals.css puts the scroll on <html>, so
@@ -106,7 +116,16 @@ export function useModalDialog<T extends HTMLElement>(onClose: () => void) {
       scroller.style.overflow = previousScrollerOverflow;
       document.body.style.overflow = previousBodyOverflow;
       for (const el of inerted) el.removeAttribute("inert");
-      previouslyFocused?.focus?.();
+
+      // Only take focus back if this dialog still had it. When one overlay
+      // hands off to another — the feed sheet opening a recipe — the new one
+      // has already focused itself by now, and restoring here would yank focus
+      // to an element the new dialog has just marked inert, landing it on
+      // <body>. Nothing to restore means nothing was taken.
+      const active = document.activeElement;
+      const stillOurs =
+        active === document.body || active === null || node.contains(active);
+      if (stillOurs) previouslyFocused?.focus?.();
     };
   }, []);
 

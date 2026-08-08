@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useId } from "react";
 import {
   X,
   ArrowLeft,
@@ -38,6 +38,11 @@ interface RecipeDetailProps {
    * way on the recipe list and another on a profile.
    */
   readOnly?: boolean;
+  /** Known before the modal opens — the feed computes it, so the Save control
+   *  can be honest on first paint rather than after a rejected POST. */
+  alreadySaved?: boolean;
+  /** Lets the surface that opened this keep its own row in step. */
+  onSaved?: () => void;
   onTagsUpdate?: (recipeId: string, tags: string[]) => Promise<void>;
   onMetadataUpdate?: (
     recipeId: string,
@@ -55,6 +60,8 @@ interface RecipeDetailProps {
 export function RecipeDetail({
   recipe,
   readOnly = false,
+  alreadySaved = false,
+  onSaved,
   onTagsUpdate,
   onMetadataUpdate,
   onDelete,
@@ -77,7 +84,9 @@ export function RecipeDetail({
   const deleteTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [saveState, setSaveState] = useState<
     "idle" | "saving" | "saved" | "error"
-  >("idle");
+  >(alreadySaved ? "saved" : "idle");
+  /** One stable prefix so each field id is unique per mounted modal. */
+  const fieldId = useId();
   const dialogRef = useModalDialog<HTMLDivElement>(onClose);
   const hostname = sourceHostname(recipe.url);
 
@@ -88,7 +97,10 @@ export function RecipeDetail({
         method: "POST",
       });
       // Already saved is the state the tap was asking for, not a failure.
-      if (res.ok || res.status === 409) setSaveState("saved");
+      if (res.ok || res.status === 409) {
+        setSaveState("saved");
+        onSaved?.();
+      }
       else if (res.status === 401) window.location.href = "/sign-in";
       else setSaveState("error");
     } catch {
@@ -262,18 +274,28 @@ export function RecipeDetail({
           {isEditingMetadata ? (
             <div className={styles.editSection}>
               <div className={styles.formGroup}>
-                <label className={styles.label}>Title</label>
+                <label className={styles.label} htmlFor={`${fieldId}-title`}>
+                  Title
+                </label>
                 <input
                   type="text"
+                  id={`${fieldId}-title`}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   className={styles.input}
                 />
               </div>
               <div className={styles.formGroup}>
-                <label className={styles.label}>Recipe URL</label>
+                <label className={styles.label} htmlFor={`${fieldId}-url`}>
+                  Recipe URL
+                </label>
                 <input
                   type="text"
+                  id={`${fieldId}-url`}
+                  inputMode="url"
+                  autoComplete="url"
+                  autoCapitalize="none"
+                  spellCheck={false}
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   className={styles.input}
@@ -281,11 +303,14 @@ export function RecipeDetail({
                 />
               </div>
               <div className={styles.formGroup}>
-                <label className={styles.label}>Thumbnail URL</label>
+                <label className={styles.label} htmlFor={`${fieldId}-thumbnailUrl`}>
+                  Thumbnail URL
+                </label>
                 <div className={styles.thumbnailInputRow}>
                   <input
                     type="text"
-                    value={thumbnailUrl}
+                    id={`${fieldId}-thumbnailUrl`}
+                  value={thumbnailUrl}
                     onChange={(e) => setThumbnailUrl(e.target.value)}
                     className={styles.input}
                     placeholder="Leave empty for no thumbnail"
@@ -299,20 +324,26 @@ export function RecipeDetail({
               </div>
               <div className={styles.formRowTwo}>
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Cook Time</label>
+                  <label className={styles.label} htmlFor={`${fieldId}-cookTime`}>
+                  Cook Time
+                </label>
                   <input
                     type="text"
-                    value={cookTime}
+                    id={`${fieldId}-cookTime`}
+                  value={cookTime}
                     onChange={(e) => setCookTime(e.target.value)}
                     className={styles.input}
                     placeholder="e.g. 30 min"
                   />
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Servings</label>
+                  <label className={styles.label} htmlFor={`${fieldId}-servings`}>
+                  Servings
+                </label>
                   <input
                     type="text"
-                    value={servings}
+                    id={`${fieldId}-servings`}
+                  value={servings}
                     onChange={(e) => setServings(e.target.value)}
                     className={styles.input}
                     placeholder="e.g. 4–6"
@@ -320,8 +351,11 @@ export function RecipeDetail({
                 </div>
               </div>
               <div className={styles.formGroup}>
-                <label className={styles.label}>Notes</label>
+                <label className={styles.label} htmlFor={`${fieldId}-notes`}>
+                  Notes
+                </label>
                 <textarea
+                  id={`${fieldId}-notes`}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   className={styles.input}
@@ -385,33 +419,21 @@ export function RecipeDetail({
                   )}
                 </div>
               )}
-              {/* The one door. This is the kitchen surface, and the whole
-                  point of opening a recipe is to go cook from it. */}
-              <a
-                href={recipe.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.openRecipeBtn}>
-                <ExternalLink size={16} aria-hidden="true" />
-                Open recipe
-                {hostname && (
-                  <span className={styles.openRecipeHost}>{hostname}</span>
-                )}
-              </a>
-
-              {/* Someone else's recipe, so keeping it is the thing you came
-                  here to do. Secondary to the door rather than a second
-                  terracotta — one per region. */}
+              {/* Which action is the door depends on whose recipe this is.
+                  On your own it is Open recipe — you already have it, and the
+                  point is to go cook. On someone else's, keeping it is what
+                  you came here to do, so Save takes the terracotta and Open
+                  steps back to the ghost pill. Still exactly one per region. */}
               {readOnly && (
                 <button
                   type="button"
-                  className={`${styles.saveToCollectionBtn} ${saveState === "saved" ? styles.saveToCollectionBtnDone : ""}`}
+                  className={`${styles.openRecipeBtn} ${styles.saveDoorBtn} ${saveState === "saved" ? styles.saveDoorBtnDone : ""}`}
                   onClick={handleSaveToCollection}
                   disabled={saveState !== "idle"}>
                   {saveState === "saved" ? (
-                    <Check size={16} aria-hidden="true" />
+                    <Check size={18} aria-hidden="true" />
                   ) : (
-                    <Plus size={16} aria-hidden="true" />
+                    <Plus size={18} aria-hidden="true" />
                   )}
                   {saveState === "saved"
                     ? "In your collection"
@@ -420,6 +442,27 @@ export function RecipeDetail({
                       : "Save to my collection"}
                 </button>
               )}
+
+              <a
+                href={recipe.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={
+                  readOnly ? styles.openRecipeGhost : styles.openRecipeBtn
+                }>
+                <ExternalLink size={16} aria-hidden="true" />
+                Open recipe
+                {hostname && (
+                  <span
+                    className={
+                      readOnly
+                        ? styles.openRecipeGhostHost
+                        : styles.openRecipeHost
+                    }>
+                    {hostname}
+                  </span>
+                )}
+              </a>
               {saveState === "error" && (
                 <p className={styles.saveError} role="alert">
                   Couldn&apos;t save that just now. Try again in a moment.

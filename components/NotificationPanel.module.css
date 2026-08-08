@@ -331,9 +331,15 @@
   opacity: 0.4;
 }
 
+/* Was --orange at 12px (3.69:1, a normal-text AA failure) and weight 900,
+   which the system reserves for the profile composition. Both were governed
+   rules. --orange-strong is tuned against white and measures 4.72:1 there, but
+   a `new` row tints its background 5% green, which pulls it to ~4.36 — under
+   the bar. The deep terracotta clears both grounds (5.7:1 on white, 5.2:1 on
+   the tint) at the same hue. */
 .attrLink {
-  color: var(--orange);
-  font-weight: 900;
+  color: var(--orange-dark);
+  font-weight: 700;
   text-decoration: none;
 }
 

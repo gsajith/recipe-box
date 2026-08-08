@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react";
 import { Bell, X, ExternalLink, Plus, Check } from "lucide-react";
 import Link from "next/link";
-import type { FeedItem } from "@/lib/types";
+import type { FeedItem, FeedRecipeItem } from "@/lib/types";
 import { useModalDialog } from "@/lib/useModalDialog";
 import styles from "./NotificationPanel.module.css";
 import RecipeThumbnail from "./RecipeThumbnail";
+import { RecipeDetail } from "./RecipeDetail";
 
 function getHostname(url: string) {
   try {
@@ -33,6 +34,9 @@ function timeAgo(isoString: string) {
 }
 
 const LS_KEY = "notificationPanel_lastOpenedAt";
+
+/** Matches the panel's slide-out transition in NotificationPanel.module.css. */
+const CLOSE_MS = 200;
 
 /**
  * The feed is a full-screen sheet on a phone, so it owes the same debt every
@@ -87,6 +91,16 @@ export function NotificationPanel() {
   const [loadingFollow, setLoadingFollow] = useState<string | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const [openRecipe, setOpenRecipe] = useState<FeedRecipeItem | null>(null);
+
+  /** The feed already knows; the 409 is only the race-condition backstop. */
+  const isSaved = (item: FeedRecipeItem) =>
+    item.already_saved || savedIds.has(item.id);
+
+  /** Opening a recipe closes the sheet first — one overlay at a time. */
+  const handleOpenRecipe = (item: FeedRecipeItem) => {
+    closeThen(() => setOpenRecipe(item));
+  };
 
   const handleSaveRecipe = async (recipeId: string) => {
     setSavingId(recipeId);
@@ -133,7 +147,27 @@ export function NotificationPanel() {
     setTimeout(() => {
       setOpen(false);
       setClosing(false);
-    }, 200);
+    }, CLOSE_MS);
+  };
+
+  /**
+   * Close the sheet, then do the thing. Mounting the recipe modal while the
+   * sheet was still animating out left two dialogs overlapping for 200ms and
+   * fighting over focus — the sheet's unmount restores focus to the bell, which
+   * by then is inert, so focus fell to <body> and the modal captured nothing.
+   * One overlay at a time, in sequence.
+   */
+  const closeThen = (after: () => void) => {
+    setClosing(true);
+    setTimeout(() => {
+      setOpen(false);
+      setClosing(false);
+      // A separate tick, so the sheet's unmount and its focus restore finish in
+      // their own commit. Batched into one, the new dialog focuses itself and
+      // the old one's cleanup then hands focus back to a bell the new dialog
+      // has just marked inert — which lands it on <body>.
+      setTimeout(after, 0);
+    }, CLOSE_MS);
   };
 
   // Read the persisted timestamp once on mount for badge counting
@@ -263,11 +297,15 @@ export function NotificationPanel() {
                     <div
                       key={item.id}
                       className={`${styles.row} ${isNew(item) ? styles.rowNew : ""}`}>
-                      <a
-                        href={item.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      {/* The row used to leave the app for the source site,
+                          so one recipe object behaved three ways depending on
+                          where you met it. It opens the same read-only modal a
+                          profile does; the hostname link below still goes to
+                          the source for anyone who wants it. */}
+                      <button
+                        type="button"
                         className={styles.rowOpenLink}
+                        onClick={() => handleOpenRecipe(item)}
                         aria-label={`Open ${item.title}`}
                       />
                       {item.thumbnail_url ? (
@@ -316,26 +354,26 @@ export function NotificationPanel() {
                           on the row led off-site. */}
                       <button
                         type="button"
-                        className={`${styles.saveBtn} ${savedIds.has(item.id) ? styles.saveBtnDone : ""}`}
+                        className={`${styles.saveBtn} ${isSaved(item) ? styles.saveBtnDone : ""}`}
                         onClick={(e) => {
                           e.stopPropagation();
                           handleSaveRecipe(item.id);
                         }}
                         disabled={
-                          savingId === item.id || savedIds.has(item.id)
+                          savingId === item.id || isSaved(item)
                         }
                         aria-label={
-                          savedIds.has(item.id)
+                          isSaved(item)
                             ? `${item.title} is in your collection`
                             : `Save ${item.title} to your collection`
                         }>
-                        {savedIds.has(item.id) ? (
+                        {isSaved(item) ? (
                           <Check size={14} aria-hidden="true" />
                         ) : (
                           <Plus size={14} aria-hidden="true" />
                         )}
                         <span>
-                          {savedIds.has(item.id)
+                          {isSaved(item)
                             ? "Saved"
                             : savingId === item.id
                               ? "Saving…"
@@ -350,6 +388,18 @@ export function NotificationPanel() {
             </div>
           </FeedSheet>
         </>
+      )}
+
+      {openRecipe && (
+        <RecipeDetail
+          recipe={openRecipe}
+          readOnly
+          alreadySaved={isSaved(openRecipe)}
+          onSaved={() =>
+            setSavedIds((prev) => new Set([...prev, openRecipe.id]))
+          }
+          onClose={() => setOpenRecipe(null)}
+        />
       )}
     </>
   );
