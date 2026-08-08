@@ -35,6 +35,9 @@ function timeAgo(isoString: string) {
 
 const LS_KEY = "notificationPanel_lastOpenedAt";
 
+/** Matches the panel's slide-out transition in NotificationPanel.module.css. */
+const CLOSE_MS = 200;
+
 /**
  * The feed is a full-screen sheet on a phone, so it owes the same debt every
  * other overlay in the app pays: a real dialog role, focus that moves in and
@@ -94,10 +97,9 @@ export function NotificationPanel() {
   const isSaved = (item: FeedRecipeItem) =>
     item.already_saved || savedIds.has(item.id);
 
-  /** Opening a recipe closes the sheet — one overlay at a time. */
+  /** Opening a recipe closes the sheet first — one overlay at a time. */
   const handleOpenRecipe = (item: FeedRecipeItem) => {
-    setOpenRecipe(item);
-    handleClose();
+    closeThen(() => setOpenRecipe(item));
   };
 
   const handleSaveRecipe = async (recipeId: string) => {
@@ -145,7 +147,27 @@ export function NotificationPanel() {
     setTimeout(() => {
       setOpen(false);
       setClosing(false);
-    }, 200);
+    }, CLOSE_MS);
+  };
+
+  /**
+   * Close the sheet, then do the thing. Mounting the recipe modal while the
+   * sheet was still animating out left two dialogs overlapping for 200ms and
+   * fighting over focus — the sheet's unmount restores focus to the bell, which
+   * by then is inert, so focus fell to <body> and the modal captured nothing.
+   * One overlay at a time, in sequence.
+   */
+  const closeThen = (after: () => void) => {
+    setClosing(true);
+    setTimeout(() => {
+      setOpen(false);
+      setClosing(false);
+      // A separate tick, so the sheet's unmount and its focus restore finish in
+      // their own commit. Batched into one, the new dialog focuses itself and
+      // the old one's cleanup then hands focus back to a bell the new dialog
+      // has just marked inert — which lands it on <body>.
+      setTimeout(after, 0);
+    }, CLOSE_MS);
   };
 
   // Read the persisted timestamp once on mount for badge counting
