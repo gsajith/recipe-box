@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useId,
   useLayoutEffect,
   useRef,
   useState,
@@ -60,6 +61,7 @@ export function FilterDropdown({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+  const listId = useId();
 
   const isMulti = values !== undefined;
   const selected = values ?? [];
@@ -107,9 +109,10 @@ export function FilterDropdown({
     }
   }, []);
 
+  // Re-measure on open and on every keystroke — the list shrinks as you type.
   useLayoutEffect(() => {
     if (open) position();
-  }, [open, position]);
+  }, [open, query, position]);
 
   // Reset the filter each time the menu opens, and put the caret in it.
   useEffect(() => {
@@ -117,11 +120,6 @@ export function FilterDropdown({
     setQuery("");
     if (searchable) searchRef.current?.focus();
   }, [open, searchable]);
-
-  // The list shrinks as you type, so the menu has to re-measure its height.
-  useLayoutEffect(() => {
-    if (open) position();
-  }, [query, open, position]);
 
   useEffect(() => {
     if (!open) return;
@@ -181,7 +179,7 @@ export function FilterDropdown({
 
   const renderOption = (option: string, keyPrefix = "") => {
     const isAll = option === ALL;
-        const isSelected = isMulti
+    const isSelected = isMulti
       ? isAll
         ? selected.length === 0
         : selected.includes(option)
@@ -217,20 +215,24 @@ export function FilterDropdown({
     );
   };
 
+  // The search field and the group headings live OUTSIDE the listbox: a
+  // listbox may only contain options and groups, so an <input> inside one is
+  // invalid and screen readers handle it badly.
   const menu = (
     <div
       ref={menuRef}
       className={`${styles.menu} ${inverted ? styles.inverted : ""}`}
-      style={menuStyle}
-      role="listbox"
-      aria-multiselectable={isMulti || undefined}
-      aria-label={label}>
+      style={menuStyle}>
       {searchable && (
         <div className={styles.searchRow}>
           <Search size={14} aria-hidden className={styles.searchIcon} />
           <input
             ref={searchRef}
             type="text"
+            role="combobox"
+            aria-controls={listId}
+            aria-expanded="true"
+            aria-autocomplete="list"
             className={styles.searchInput}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -241,20 +243,36 @@ export function FilterDropdown({
         </div>
       )}
 
-      {!q && renderOption(ALL)}
+      <div
+        id={listId}
+        role="listbox"
+        aria-multiselectable={isMulti || undefined}
+        aria-label={label}>
+        {!q && renderOption(ALL)}
 
-      {visiblePinned.length > 0 && (
-        <>
-          <p className={styles.groupLabel}>{pinnedLabel}</p>
-          {visiblePinned.map((o) => renderOption(o, "pinned-"))}
-          <p className={styles.groupLabel}>All {label.toLowerCase()}</p>
-        </>
-      )}
+        {visiblePinned.length > 0 && (
+          <div role="group" aria-label={pinnedLabel}>
+            <p className={styles.groupLabel} aria-hidden="true">
+              {pinnedLabel}
+            </p>
+            {visiblePinned.map((o) => renderOption(o, "pinned-"))}
+          </div>
+        )}
 
-      {visibleOptions.map((o) => renderOption(o))}
+        <div role="group" aria-label={`All ${label.toLowerCase()}`}>
+          {visiblePinned.length > 0 && (
+            <p className={styles.groupLabel} aria-hidden="true">
+              All {label.toLowerCase()}
+            </p>
+          )}
+          {visibleOptions.map((o) => renderOption(o))}
+        </div>
+      </div>
 
       {visibleOptions.length === 0 && (
-        <p className={styles.noMatch}>No {label.toLowerCase()} match “{query}”</p>
+        <p className={styles.noMatch} role="status">
+          No {label.toLowerCase()} match “{query}”
+        </p>
       )}
     </div>
   );
