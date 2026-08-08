@@ -56,7 +56,6 @@ export function RecipeFilterPanel({
   const [selectedMeal, setSelectedMeal] = useState<string>(ALL);
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>(ALL);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [allTagsShown, setAllTagsShown] = useState(false);
 
   // Only offer a filter when the library actually spans more than one value —
   // a lone option filters nothing and just eats space on a phone.
@@ -124,19 +123,20 @@ export function RecipeFilterPanel({
     setSelectedTags([]);
   }
 
-  /** Free-form tags only — meal type and difficulty have their own dropdowns. */
-  function getOtherTags(): Array<[string, number]> {
-    const map: Record<string, number> = {};
-    filteredRecipes.forEach((r) =>
+  /**
+   * Free-form tags only — meal type and difficulty have their own dropdowns.
+   * Sorted alphabetically rather than by frequency: in a list this long you
+   * are looking for a tag you already have in mind, not browsing the top ones.
+   */
+  const otherTags = useMemo(() => {
+    const seen = new Set<string>();
+    recipes.forEach((r) =>
       r.tags?.forEach((t) => {
-        if (isPromotedTag(t)) return;
-        map[t] = (map[t] || 0) + 1;
+        if (!isPromotedTag(t)) seen.add(t);
       }),
     );
-    return Object.entries(map).sort((a, b) => b[1] - a[1]);
-  }
-
-  const otherTags = getOtherTags();
+    return [...seen].sort((a, b) => a.localeCompare(b));
+  }, [recipes]);
   const isInverted = theme === "inverted";
   const hasActiveFilters =
     selectedSource !== ALL ||
@@ -148,7 +148,8 @@ export function RecipeFilterPanel({
   const hasAnyDropdown =
     presentSources.length > 1 ||
     presentMeals.length > 1 ||
-    presentDifficulties.length > 1;
+    presentDifficulties.length > 1 ||
+    otherTags.length > 0;
   const showFilterRow = hasAnyDropdown || hasActiveFilters;
 
   return (
@@ -179,7 +180,7 @@ export function RecipeFilterPanel({
       </div>
 
       {showFilterRow && (
-        <div className={styles.filterRow}>
+        <div className={`${styles.filterRow} ${tagsFilterClassName ?? ""}`}>
           {presentSources.length > 1 && (
             <FilterDropdown
               label="Platform"
@@ -208,6 +209,20 @@ export function RecipeFilterPanel({
             />
           )}
 
+          {/* Tags used to be a wrapping wall of up to 39 chips that pushed the
+              first recipe off the fold, and expanding it was a one-way door.
+              Same control as every other filter now. */}
+          {otherTags.length > 0 && (
+            <FilterDropdown
+              label="Tags"
+              options={otherTags}
+              values={selectedTags}
+              onToggle={handleTagToggle}
+              onClear={() => setSelectedTags([])}
+              inverted={isInverted}
+            />
+          )}
+
           {hasActiveFilters && (
             <button
               type="button"
@@ -222,36 +237,6 @@ export function RecipeFilterPanel({
         </div>
       )}
 
-      {otherTags.length > 0 && (
-        <div className={`${styles.tagsFilter} ${tagsFilterClassName ?? ""}`}>
-          <div className={styles.tagsFilterContent}>
-            {otherTags
-              .filter((_, idx) => allTagsShown || idx < 8)
-              .map(([tag]) => (
-                <button
-                  key={tag}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleTagToggle(tag);
-                  }}
-                  className={`${styles.tagFilterBtn} ${selectedTags.includes(tag) ? styles.tagFilterBtnActive : ""}`}>
-                  {tag}
-                </button>
-              ))}
-            {!allTagsShown && otherTags.length > 8 && (
-              <button
-                className={`${styles.tagFilterBtn} ${styles.showAllBtn}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setAllTagsShown(true);
-                }}>
-                … show all tags
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
       {loading ? (
         <div className={styles.loadingText}>Loading recipes...</div>
       ) : (
@@ -263,6 +248,11 @@ export function RecipeFilterPanel({
             onRecipeSelect={onRecipeSelect}
             onRecipeDelete={onRecipeDelete ?? (async () => {})}
             viewMode={viewMode}
+            isFiltered={hasActiveFilters || searchQuery.trim().length > 0}
+            onClearFilters={() => {
+              clearAllFilters();
+              handleSearch("");
+            }}
           />
         </div>
       )}

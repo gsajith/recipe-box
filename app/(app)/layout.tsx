@@ -10,7 +10,7 @@ export default function AppLayout({
     <div className={styles.page}>
       <div className={styles.container}>
         <AppHeader />
-        {children}
+        <main>{children}</main>
       </div>
     </div>
   );

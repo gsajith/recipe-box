@@ -11,11 +11,22 @@ import {
   Share,
   Check,
   Trash2,
+  Tag as TagIcon,
 } from "lucide-react";
 import { Recipe } from "@/lib/types";
 import styles from "./RecipeDetail.module.css";
 import RecipeThumbnail from "./RecipeThumbnail";
 import { DIFFICULTY_TAGS, MEAL_TYPE_TAGS } from "@/lib/tags";
+import { useModalDialog } from "@/lib/useModalDialog";
+
+/** A saved URL can be malformed — never let hostname parsing break the render. */
+function sourceHostname(rawUrl: string): string | null {
+  try {
+    return new URL(rawUrl).hostname.replace(/^www\./, "");
+  } catch {
+    return null;
+  }
+}
 
 interface RecipeDetailProps {
   recipe: Recipe;
@@ -53,7 +64,10 @@ export function RecipeDetail({
   const [isSaving, setIsSaving] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [isEditingTags, setIsEditingTags] = useState(false);
   const deleteTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dialogRef = useModalDialog<HTMLDivElement>(onClose);
+  const hostname = sourceHostname(recipe.url);
 
   const handleDelete = () => {
     if (!confirmingDelete) {
@@ -113,8 +127,12 @@ export function RecipeDetail({
     applyTagUpdate(tags.filter((tag) => tag !== tagToRemove));
   };
 
-  const handleAddSuggestedTag = (tag: string) => {
-    if (!tags.includes(tag)) applyTagUpdate([...tags, tag]);
+  // A suggestion chip is a toggle, not a one-way add: tapping a chip that
+  // reads as already-applied used to be a dead no-op.
+  const handleToggleSuggestedTag = (tag: string) => {
+    applyTagUpdate(
+      tags.includes(tag) ? tags.filter((t) => t !== tag) : [...tags, tag],
+    );
   };
 
   const handleKeyDown = async (e: React.KeyboardEvent) => {
@@ -157,7 +175,16 @@ export function RecipeDetail({
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={dialogRef}
+        className={styles.modal}
+        role="dialog"
+        aria-modal="true"
+        // Not aria-labelledby: the heading it would point at unmounts in
+        // metadata-edit mode, which would leave the dialog with no name.
+        aria-label={title}
+        tabIndex={-1}
+        onClick={(e) => e.stopPropagation()}>
         {/* Nav bar — absolutely positioned on desktop (floats over image),
             sticky on mobile so it stays visible while scrolling */}
         <div className={styles.navBar}>
@@ -170,22 +197,39 @@ export function RecipeDetail({
               <span className={styles.copiedLabel}>Link copied!</span>
             )}
             <button
+              type="button"
               className={`${styles.shareBtn} ${shareCopied ? styles.shareBtnCopied : ""}`}
               onClick={handleShare}
+              aria-label={shareCopied ? "Link copied" : "Copy share link"}
               title={shareCopied ? "Link copied!" : "Share recipe"}>
-              {shareCopied ? <Check size={16} /> : <Share size={16} />}
+              {shareCopied ? (
+                <Check size={16} aria-hidden="true" />
+              ) : (
+                <Share size={16} aria-hidden="true" />
+              )}
             </button>
             <button
+              type="button"
               className={`${styles.deleteBtn} ${confirmingDelete ? styles.deleteBtnConfirming : ""}`}
               onClick={handleDelete}
+              aria-label={
+                confirmingDelete
+                  ? `Confirm delete of ${title}`
+                  : `Delete ${title}`
+              }
               title={
                 confirmingDelete ? "Tap again to delete" : "Delete recipe"
               }>
-              <Trash2 size={16} />
+              <Trash2 size={16} aria-hidden="true" />
               {confirmingDelete && <span>Delete?</span>}
             </button>
-            <button className={styles.closeBtn} onClick={onClose} title="Close">
-              <X size={20} />
+            <button
+              type="button"
+              className={styles.closeBtn}
+              onClick={onClose}
+              aria-label="Close recipe"
+              title="Close">
+              <X size={20} aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -298,10 +342,12 @@ export function RecipeDetail({
               <div className={styles.titleRow}>
                 <h2>{title}</h2>
                 <button
+                  type="button"
                   onClick={() => setIsEditingMetadata(true)}
                   className={styles.editBtn}
+                  aria-label="Edit recipe details"
                   title="Edit recipe">
-                  <Edit2 size={16} />
+                  <Edit2 size={16} aria-hidden="true" />
                 </button>
               </div>
               {(cookTime || servings) && (
@@ -323,15 +369,19 @@ export function RecipeDetail({
                   )}
                 </div>
               )}
+              {/* The one door. This is the kitchen surface, and the whole
+                  point of opening a recipe is to go cook from it. */}
               <a
                 href={recipe.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={styles.sourceLink}>
-                <ExternalLink size={12} />
-                {new URL(recipe.url).hostname.replace(/^www\./, "")}
+                className={styles.openRecipeBtn}>
+                <ExternalLink size={16} aria-hidden="true" />
+                Open recipe
+                {hostname && (
+                  <span className={styles.openRecipeHost}>{hostname}</span>
+                )}
               </a>
-              <hr className={styles.divider} />
             </>
           )}
 
@@ -342,72 +392,111 @@ export function RecipeDetail({
             </div>
           )}
 
+          {/* Tags are a filing job, not a cooking job. At rest this is a
+              read-only row; the editor is one tap away for when you're
+              actually filing. */}
           <div className={styles.tagsSection}>
-            <div className={styles.suggestionsSection}>
-              <div className={styles.suggestionGroup}>
-                <p className={styles.suggestionLabel}>Meal Type</p>
-                <div className={styles.suggestionsRow}>
-                  {mealTypeTags.map((tag) => (
-                    <button
-                      key={tag}
-                      onClick={() => handleAddSuggestedTag(tag)}
-                      className={`${styles.suggestionBtn} ${
-                        tags.includes(tag) ? styles.suggestionBtnActive : ""
-                      }`}
-                      disabled={isSaving}>
-                      {tag}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className={styles.suggestionGroup}>
-                <p className={styles.suggestionLabel}>Difficulty</p>
-                <div className={styles.suggestionsRow}>
-                  {difficultyTags.map((tag) => (
-                    <button
-                      key={tag}
-                      onClick={() => handleAddSuggestedTag(tag)}
-                      className={`${styles.suggestionBtn} ${
-                        tags.includes(tag) ? styles.suggestionBtnActive : ""
-                      }`}
-                      disabled={isSaving}>
-                      {tag}
-                    </button>
-                  ))}
-                </div>
-              </div>
+            <div className={styles.tagsHeader}>
+              <span className={styles.notesLabel}>Tags</span>
+              <button
+                type="button"
+                className={styles.tagsToggleBtn}
+                onClick={() => setIsEditingTags((v) => !v)}
+                aria-expanded={isEditingTags}>
+                <TagIcon size={13} aria-hidden="true" />
+                {isEditingTags ? "Done" : tags.length ? "Edit" : "Add tags"}
+              </button>
             </div>
 
-            <hr className={styles.divider} />
-
-            <div className={styles.tagsInput}>
-              <input
-                ref={tagInputRef}
-                type="text"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Add a tag..."
-                className={styles.input}
-                disabled={isSaving}
-              />
-            </div>
-
-            <div className={styles.tagsList}>
-              {tags.map((tag) => (
-                <span key={tag} className={styles.tag}>
-                  {tag}
-                  <button
-                    onClick={() => handleRemoveTag(tag)}
-                    className={styles.removeTagBtn}
-                    title="Remove tag"
-                    disabled={isSaving}>
-                    <X size={14} />
-                  </button>
-                </span>
+            {!isEditingTags &&
+              (tags.length > 0 ? (
+                <div className={styles.tagsList}>
+                  {tags.map((tag) => (
+                    <span key={tag} className={styles.tagReadonly}>
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className={styles.tagsEmpty}>
+                  No tags yet — tags are how you find this again.
+                </p>
               ))}
-            </div>
+
+            {isEditingTags && (
+              <>
+                <div className={styles.suggestionsSection}>
+                  <div className={styles.suggestionGroup}>
+                    <p className={styles.suggestionLabel}>Meal Type</p>
+                    <div className={styles.suggestionsRow}>
+                      {mealTypeTags.map((tag) => (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => handleToggleSuggestedTag(tag)}
+                          className={`${styles.suggestionBtn} ${
+                            tags.includes(tag) ? styles.suggestionBtnActive : ""
+                          }`}
+                          aria-pressed={tags.includes(tag)}
+                          disabled={isSaving}>
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className={styles.suggestionGroup}>
+                    <p className={styles.suggestionLabel}>Difficulty</p>
+                    <div className={styles.suggestionsRow}>
+                      {difficultyTags.map((tag) => (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => handleToggleSuggestedTag(tag)}
+                          className={`${styles.suggestionBtn} ${
+                            tags.includes(tag) ? styles.suggestionBtnActive : ""
+                          }`}
+                          aria-pressed={tags.includes(tag)}
+                          disabled={isSaving}>
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles.tagsInput}>
+                  <input
+                    ref={tagInputRef}
+                    type="text"
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Add a tag..."
+                    aria-label="Add a tag"
+                    className={styles.input}
+                    disabled={isSaving}
+                  />
+                </div>
+
+                <div className={styles.tagsList}>
+                  {tags.map((tag) => (
+                    <span key={tag} className={styles.tag}>
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTag(tag)}
+                        className={styles.removeTagBtn}
+                        aria-label={`Remove tag ${tag}`}
+                        title="Remove tag"
+                        disabled={isSaving}>
+                        <X size={14} aria-hidden="true" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

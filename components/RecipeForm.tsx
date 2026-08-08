@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Plus, X } from "lucide-react";
 import styles from "./RecipeForm.module.css";
+import { useModalDialog } from "@/lib/useModalDialog";
 
 interface RecipeFormProps {
   onSubmit: (url: string) => Promise<void>;
@@ -54,55 +55,99 @@ export function RecipeForm({ onSubmit, isLoading = false }: RecipeFormProps) {
       </button>
 
       {isOpen && (
-        <div className={styles.modalOverlay} onClick={handleClose}>
-          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.header}>
-              <h2>Add Recipe</h2>
-              <button
-                className={styles.closeBtn}
-                onClick={handleClose}
-                title="Close">
-                <X size={20} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className={styles.form}>
-              <div className={styles.formGroup}>
-                <label htmlFor="url" className={styles.label}>
-                  Recipe or Video URL
-                </label>
-                <input
-                  id="url"
-                  type="text"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  placeholder="https://example.com/recipe..."
-                  className={styles.input}
-                  disabled={isLoading}
-                  autoFocus
-                />
-              </div>
-
-              {error && <p className={styles.error}>{error}</p>}
-
-              <div className={styles.buttonGroup}>
-                <button
-                  type="button"
-                  className={styles.cancelBtn}
-                  onClick={handleClose}>
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className={styles.submitBtn}
-                  disabled={isLoading}>
-                  {isLoading ? "Adding Recipe..." : "Add Recipe"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <AddRecipeDialog
+          url={url}
+          error={error}
+          isLoading={isLoading}
+          onUrlChange={setUrl}
+          onSubmit={handleSubmit}
+          onClose={handleClose}
+        />
       )}
     </>
+  );
+}
+
+/** Split out so the dialog hook mounts and unmounts with the dialog itself. */
+function AddRecipeDialog({
+  url,
+  error,
+  isLoading,
+  onUrlChange,
+  onSubmit,
+  onClose,
+}: {
+  url: string;
+  error: string;
+  isLoading: boolean;
+  onUrlChange: (value: string) => void;
+  onSubmit: (e: React.FormEvent) => void;
+  onClose: () => void;
+}) {
+  const dialogRef = useModalDialog<HTMLDivElement>(onClose);
+  const titleId = useId();
+  const errorId = useId();
+
+  return (
+    <div className={styles.modalOverlay} onClick={onClose}>
+      <div
+        ref={dialogRef}
+        className={styles.modal}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        onClick={(e) => e.stopPropagation()}>
+        <div className={styles.header}>
+          <h2 id={titleId}>Add Recipe</h2>
+          <button
+            type="button"
+            className={styles.closeBtn}
+            onClick={onClose}
+            aria-label="Close"
+            title="Close">
+            <X size={20} aria-hidden="true" />
+          </button>
+        </div>
+
+        <form onSubmit={onSubmit} className={styles.form}>
+          <div className={styles.formGroup}>
+            <label htmlFor="url" className={styles.label}>
+              Recipe or Video URL
+            </label>
+            <input
+              id="url"
+              type="text"
+              value={url}
+              onChange={(e) => onUrlChange(e.target.value)}
+              placeholder="https://example.com/recipe..."
+              className={styles.input}
+              disabled={isLoading}
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? errorId : undefined}
+              autoFocus
+            />
+          </div>
+
+          {error && (
+            <p id={errorId} className={styles.error} role="alert">
+              {error}
+            </p>
+          )}
+
+          <div className={styles.buttonGroup}>
+            <button type="button" className={styles.cancelBtn} onClick={onClose}>
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className={styles.submitBtn}
+              disabled={isLoading}>
+              {isLoading ? "Adding Recipe..." : "Add Recipe"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }

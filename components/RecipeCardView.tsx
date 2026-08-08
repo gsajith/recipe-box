@@ -21,17 +21,15 @@ export function RecipeCardView({
     <div className={styles.container}>
       <div className={styles.recipeGrid}>
         {recipes.map((recipe) => (
-          <div
-            key={recipe.id}
-            className={styles.recipeCard}
-            onClick={() => onRecipeSelect(recipe)}>
+          <article key={recipe.id} className={styles.recipeCard}>
             <RecipeItemContent
               recipe={recipe}
+              onSelect={() => onRecipeSelect(recipe)}
               onDelete={onDelete}
               deletingId={deletingId}
               viewMode="grid"
             />
-          </div>
+          </article>
         ))}
       </div>
     </div>

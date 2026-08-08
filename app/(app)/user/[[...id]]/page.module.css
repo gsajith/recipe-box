@@ -153,6 +153,7 @@
 }
 
 .recipesContainer {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -161,6 +162,24 @@
   border-radius: 42px;
   background: var(--orange);
   transition: border-radius 0.4s ease;
+}
+
+/* The deck is a real control now, not a div with an onClick. Above the badge's
+   z-index: 99 so the whole collapsed surface is one button. */
+.deckOpenBtn {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: inherit;
+  cursor: pointer;
+}
+
+.deckOpenBtn:focus-visible {
+  outline: 3px solid white;
+  outline-offset: -5px;
 }
 
 .recipesContainerClickable {
@@ -340,6 +359,10 @@
   .topRowContainer {
     flex-direction: column-reverse;
     justify-content: center;
+    /* The green .bottomRow underlaps by 200px to make the scoop; without a
+       stacking context here it painted over the follower/following stats. */
+    position: relative;
+    z-index: 2;
   }
 
   .avatarContainer {

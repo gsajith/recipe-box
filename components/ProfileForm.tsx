@@ -51,6 +51,7 @@ export function ProfileForm({
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [removePhoto, setRemovePhoto] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const checkController = useRef<AbortController | null>(null);
 
@@ -173,14 +174,17 @@ export function ProfileForm({
         }),
       });
       if (!res.ok) {
-        const err = await res.json();
-        alert(err.error || "Failed to save profile");
+        const err = await res.json().catch(() => ({}));
+        setSaveError(err.error || "Couldn't save your profile. Try again.");
         return;
       }
       const data = await res.json();
+      setSaveError(null);
       onSuccess(data);
     } catch {
-      alert("Failed to save profile");
+      setSaveError(
+        "Couldn't reach the server. Check your connection and try again.",
+      );
     } finally {
       setSaving(false);
     }
@@ -336,6 +340,12 @@ export function ProfileForm({
           />
           <span className={styles.hint}>Shown on your profile page.</span>
         </div>
+
+        {saveError && (
+          <p className={styles.saveError} role="alert">
+            {saveError}
+          </p>
+        )}
 
         <button
           type="submit"

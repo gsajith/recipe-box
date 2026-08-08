@@ -65,7 +65,30 @@
 }
 
 .statusText.error {
-  color: #c0392b;
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.errorDetail {
+  margin: -0.5rem 0 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.textBtn {
+  padding: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.textBtn:hover {
+  color: var(--primary);
 }
 
 .primaryBtn {

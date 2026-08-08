@@ -386,11 +386,18 @@
 }
 
 .clipboardUrl {
-  font-size: 0.72rem;
-  color: rgba(250, 247, 239, 0.45);
+  font-size: 0.75rem;
+  /* Was 0.45 alpha on green — under 4.5:1 against the banner. */
+  color: rgba(250, 247, 239, 0.72);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.clipboardErrorText {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
 }
 
 .clipboardAttribution {
@@ -421,7 +428,8 @@
 
 .clipboardSaveBtn {
   flex-shrink: 0;
-  padding: 0.4rem 0.875rem;
+  min-height: 44px;
+  padding: 0.4rem 1rem;
   background: var(--orange);
   color: white;
   border: none;
@@ -442,6 +450,7 @@
 }
 
 .clipboardDismissBtn {
+  position: relative;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -454,6 +463,17 @@
   color: rgba(250, 247, 239, 0.65);
   cursor: pointer;
   transition: background 0.15s ease;
+}
+
+/* The pill stays visually compact in a tight banner; the thumb target doesn't. */
+.clipboardDismissBtn::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
 }
 
 .clipboardDismissBtn:hover {

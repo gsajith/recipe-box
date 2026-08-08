@@ -9,6 +9,7 @@ import SourceBadge from "./SourceBadge";
 
 interface RecipeItemContentProps {
   recipe: Recipe;
+  onSelect: () => void;
   onDelete: (recipeId: string) => Promise<void>;
   deletingId: string | null;
   viewMode: "grid" | "list";
@@ -16,6 +17,7 @@ interface RecipeItemContentProps {
 
 export function RecipeItemContent({
   recipe,
+  onSelect,
   onDelete,
   deletingId,
   viewMode,
@@ -39,6 +41,13 @@ export function RecipeItemContent({
 
   return (
     <>
+      <button
+        type="button"
+        className={styles.cardOpenBtn}
+        onClick={onSelect}
+        aria-label={`Open ${recipe.title}`}
+      />
+
       {recipe.thumbnail_url && (
         <div
           className={
@@ -110,10 +119,16 @@ export function RecipeItemContent({
       </div>
 
       <button
+        type="button"
         className={`${styles.deleteBtn} ${confirmingDelete ? styles.deleteBtnConfirming : ""}`}
         onClick={handleDelete}
+        aria-label={
+          confirmingDelete
+            ? `Confirm delete of ${recipe.title}`
+            : `Delete ${recipe.title}`
+        }
         title={confirmingDelete ? "Tap again to delete" : "Delete recipe"}>
-        <Trash2 size={16} />
+        <Trash2 size={16} aria-hidden="true" />
         {confirmingDelete && <span>Delete?</span>}
       </button>
     </>

@@ -13,10 +13,15 @@
 
 
 .logo {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   font-family: var(--font-serif), Georgia, serif;
   font-size: clamp(1.5rem, 7vw, 2.5rem);
   font-weight: 800;
-  line-height: 0;
+  /* Was line-height: 0, which collapsed the anchor's box to zero height — the
+     wordmark painted outside its own hit area and focus ring. */
+  line-height: 1.1;
   letter-spacing: -0.025em;
   color: var(--orange);
 }
