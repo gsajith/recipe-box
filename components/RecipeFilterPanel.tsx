@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { LayoutGrid, List } from "lucide-react";
 import { SearchBar } from "@/components/SearchBar";
 import { RecipeList } from "@/components/RecipeList";
@@ -36,7 +36,15 @@ interface RecipeFilterPanelProps {
   controlsClassName?: string;
   /** Extra className merged onto the tags filter row (e.g. for slide-in animation) */
   tagsFilterClassName?: string;
+  /**
+   * Mirror the filters into the query string and the view mode into
+   * localStorage. Only the recipe list owns the URL — the profile page renders
+   * this panel too, and two instances writing the same address bar would fight.
+   */
+  persistState?: boolean;
 }
+
+const VIEW_MODE_KEY = "recipeList_viewMode";
 
 export function RecipeFilterPanel({
   recipes,
@@ -48,6 +56,7 @@ export function RecipeFilterPanel({
   hideDeleteButton,
   controlsClassName,
   tagsFilterClassName,
+  persistState = false,
 }: RecipeFilterPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -55,6 +64,76 @@ export function RecipeFilterPanel({
   const [selectedMeal, setSelectedMeal] = useState<string>(ALL);
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>(ALL);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+  /**
+   * Six filter states used to live and die with the tab. Reload, share a
+   * narrowed view, or come back from the source site and you started over.
+   *
+   * Read on mount rather than in a lazy initialiser: this component is
+   * server-rendered too, and seeding state from `window` would hand the client
+   * different markup than the server produced.
+   *
+   * `hydrated` is state and not a ref for a reason. Effects in one commit run
+   * in declaration order with *that render's* values, so a ref flipped here
+   * would let the write effects below run in the same commit still holding the
+   * pre-hydration defaults — putting the empty query back over the URL and
+   * "grid" back over a stored "list", which the next mount would then read as
+   * the truth. Gating on state defers every write to the commit after the
+   * restored values have landed.
+   */
+  const [hydrated, setHydrated] = useState(!persistState);
+  useEffect(() => {
+    if (!persistState) return;
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get("q");
+    const tags = params.get("tags");
+    const source = params.get("source");
+    const meal = params.get("meal");
+    const difficulty = params.get("difficulty");
+    if (q) setSearchQuery(q);
+    if (tags) setSelectedTags(tags.split(",").filter(Boolean));
+    if (source) setSelectedSource(source as SourceType);
+    if (meal) setSelectedMeal(meal);
+    if (difficulty) setSelectedDifficulty(difficulty);
+
+    const storedView = localStorage.getItem(VIEW_MODE_KEY);
+    if (storedView === "grid" || storedView === "list") setViewMode(storedView);
+
+    setHydrated(true);
+  }, [persistState]);
+
+  // replaceState, not the router: filters change on every keystroke, and each
+  // one would otherwise be a navigation and a history entry to back out of.
+  useEffect(() => {
+    if (!persistState || !hydrated) return;
+    const params = new URLSearchParams();
+    if (searchQuery.trim()) params.set("q", searchQuery.trim());
+    if (selectedTags.length) params.set("tags", selectedTags.join(","));
+    if (selectedSource !== ALL) params.set("source", selectedSource);
+    if (selectedMeal !== ALL) params.set("meal", selectedMeal);
+    if (selectedDifficulty !== ALL) params.set("difficulty", selectedDifficulty);
+    const query = params.toString();
+    window.history.replaceState(
+      null,
+      "",
+      query ? `${window.location.pathname}?${query}` : window.location.pathname,
+    );
+  }, [
+    persistState,
+    hydrated,
+    searchQuery,
+    selectedTags,
+    selectedSource,
+    selectedMeal,
+    selectedDifficulty,
+  ]);
+
+  // A display preference, not a view of the data — it belongs to the device,
+  // not to the link you'd send someone.
+  useEffect(() => {
+    if (!persistState || !hydrated) return;
+    localStorage.setItem(VIEW_MODE_KEY, viewMode);
+  }, [persistState, hydrated, viewMode]);
 
   // Only offer a filter when the library actually spans more than one value —
   // a lone option filters nothing and just eats space on a phone.
@@ -111,6 +190,15 @@ export function RecipeFilterPanel({
     selectedMeal,
     selectedDifficulty,
   ]);
+
+  /** Identifies the current result set, so the list knows when to page anew. */
+  const filterKey = [
+    searchQuery.trim(),
+    selectedTags.join(","),
+    selectedSource,
+    selectedMeal,
+    selectedDifficulty,
+  ].join("|");
 
   function handleTagToggle(tag: string) {
     setSelectedTags((prev) =>
@@ -282,6 +370,7 @@ export function RecipeFilterPanel({
             onRecipeDelete={onRecipeDelete ?? (async () => {})}
             viewMode={viewMode}
             tagCounts={tagCounts}
+            resetKey={filterKey}
             isFiltered={hasActiveFilters || searchQuery.trim().length > 0}
             onClearFilters={() => {
               clearAllFilters();

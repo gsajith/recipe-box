@@ -1,10 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Recipe } from "@/lib/types";
 import { RecipeCardView } from "./RecipeCardView";
 import { RecipeListView } from "./RecipeListView";
 import styles from "./RecipeList.module.css";
+
+/**
+ * How many recipes render before the list asks for more.
+ *
+ * The collection is fetched whole — search, the four filters and the tag
+ * frequency map all reason over every recipe, and paging the *fetch* would mean
+ * filtering only what happened to be loaded. What was actually expensive was
+ * rendering it: 84 recipes built 2,710 DOM nodes and 30,181px of scroll, about
+ * 36 phone screens, every one of them mounted whether or not you ever reached
+ * it. So the fetch stays whole and the render pages.
+ */
+const PAGE_SIZE = 24;
 
 interface RecipeListProps {
   recipes: Recipe[];
@@ -16,6 +28,8 @@ interface RecipeListProps {
   onClearFilters?: () => void;
   /** How many recipes carry each tag, for ranking card chips. */
   tagCounts?: Record<string, number>;
+  /** Changes when the filters change, so paging restarts on a new result set. */
+  resetKey?: string;
 }
 
 export function RecipeList({
@@ -26,8 +40,11 @@ export function RecipeList({
   isFiltered = false,
   onClearFilters,
   tagCounts,
+  resetKey,
 }: RecipeListProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const loadMoreRef = useRef<HTMLButtonElement>(null);
 
   const handleDelete = async (recipeId: string) => {
     setDeletingId(recipeId);
@@ -37,6 +54,43 @@ export function RecipeList({
       setDeletingId(null);
     }
   };
+
+  // Narrowing the list has to start it over — otherwise filtering down to six
+  // results would still be holding a page count from a browse of eighty.
+  //
+  // Keyed on the filters rather than on the array, because those are different
+  // events that look identical from here: deleting a recipe also shortens the
+  // list, and collapsing someone back to the first 24 after they deleted
+  // something eighty deep would be its own small betrayal.
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [resetKey]);
+
+  const visible = useMemo(
+    () => recipes.slice(0, visibleCount),
+    [recipes, visibleCount],
+  );
+  const remaining = recipes.length - visible.length;
+
+  // Reaching the button is the request. It stays a real button so the list
+  // still finishes without IntersectionObserver, and so reaching the end by
+  // keyboard gives you something to press rather than a scroll position.
+  useEffect(() => {
+    const node = loadMoreRef.current;
+    if (!node || remaining <= 0) return;
+    if (typeof IntersectionObserver === "undefined") return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisibleCount((n) => n + PAGE_SIZE);
+        }
+      },
+      { rootMargin: "600px 0px" },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [remaining]);
 
   if (recipes.length === 0) {
     // "Nothing saved" and "nothing matches" are different problems, and telling
@@ -62,21 +116,47 @@ export function RecipeList({
     );
   }
 
-  return viewMode === "list" ? (
-    <RecipeListView
-      recipes={recipes}
-      onRecipeSelect={onRecipeSelect}
-      onDelete={handleDelete}
-      deletingId={deletingId}
-      tagCounts={tagCounts}
-    />
-  ) : (
-    <RecipeCardView
-      recipes={recipes}
-      onRecipeSelect={onRecipeSelect}
-      onDelete={handleDelete}
-      deletingId={deletingId}
-      tagCounts={tagCounts}
-    />
+  return (
+    <>
+      {viewMode === "list" ? (
+        <RecipeListView
+          recipes={visible}
+          onRecipeSelect={onRecipeSelect}
+          onDelete={handleDelete}
+          deletingId={deletingId}
+          tagCounts={tagCounts}
+        />
+      ) : (
+        <RecipeCardView
+          recipes={visible}
+          onRecipeSelect={onRecipeSelect}
+          onDelete={handleDelete}
+          deletingId={deletingId}
+          tagCounts={tagCounts}
+        />
+      )}
+
+      {/* Announced politely so a screen reader learns the list grew without
+          having the growth interrupt whatever it was reading. */}
+      <p className={styles.listStatus} role="status" aria-live="polite">
+        {remaining > 0
+          ? `Showing ${visible.length} of ${recipes.length} recipes`
+          : recipes.length > PAGE_SIZE
+            ? `All ${recipes.length} recipes`
+            : ""}
+      </p>
+
+      {remaining > 0 && (
+        <div className={styles.loadMoreWrap}>
+          <button
+            ref={loadMoreRef}
+            type="button"
+            className={styles.loadMoreBtn}
+            onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}>
+            Show {Math.min(remaining, PAGE_SIZE)} more
+          </button>
+        </div>
+      )}
+    </>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Bell, X, ExternalLink } from "lucide-react";
+import { Bell, X, ExternalLink, Plus, Check } from "lucide-react";
 import Link from "next/link";
 import type { FeedItem } from "@/lib/types";
 import { useModalDialog } from "@/lib/useModalDialog";
@@ -85,6 +85,28 @@ export function NotificationPanel() {
   const [lastSeenAt, setLastSeenAt] = useState<string | null>(null);
   const [followedBack, setFollowedBack] = useState<Set<string>>(new Set());
   const [loadingFollow, setLoadingFollow] = useState<string | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+
+  const handleSaveRecipe = async (recipeId: string) => {
+    setSavingId(recipeId);
+    try {
+      const res = await fetch(`/api/recipes/${recipeId}/save`, {
+        method: "POST",
+      });
+      // 409 means it is already in the collection — which is the state the tap
+      // was asking for, so it reads as saved rather than as an error.
+      if (res.ok || res.status === 409) {
+        setSavedIds((prev) => new Set([...prev, recipeId]));
+      } else if (res.status === 401) {
+        window.location.href = "/sign-in";
+      }
+    } catch {
+      // Leave the button as it was; the row is still openable.
+    } finally {
+      setSavingId(null);
+    }
+  };
 
   useEffect(() => {
     fetch("/api/feed")
@@ -289,6 +311,37 @@ export function NotificationPanel() {
                           </span>
                         </div>
                       </div>
+                      {/* The feed showed you what people you follow are cooking
+                          and gave you no way to keep any of it — every action
+                          on the row led off-site. */}
+                      <button
+                        type="button"
+                        className={`${styles.saveBtn} ${savedIds.has(item.id) ? styles.saveBtnDone : ""}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSaveRecipe(item.id);
+                        }}
+                        disabled={
+                          savingId === item.id || savedIds.has(item.id)
+                        }
+                        aria-label={
+                          savedIds.has(item.id)
+                            ? `${item.title} is in your collection`
+                            : `Save ${item.title} to your collection`
+                        }>
+                        {savedIds.has(item.id) ? (
+                          <Check size={14} aria-hidden="true" />
+                        ) : (
+                          <Plus size={14} aria-hidden="true" />
+                        )}
+                        <span>
+                          {savedIds.has(item.id)
+                            ? "Saved"
+                            : savingId === item.id
+                              ? "Saving…"
+                              : "Save"}
+                        </span>
+                      </button>
                       {isNew(item) && <span className={styles.newDot} />}
                     </div>
                   );
