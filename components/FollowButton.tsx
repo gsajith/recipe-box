@@ -14,7 +14,6 @@ interface FollowButtonProps {
   variant?: "onDark" | "onLight";
   /** "Follow back" when they already follow you. */
   followLabel?: string;
-  onChange?: (isFollowing: boolean) => void;
 }
 
 export function FollowButton({
@@ -22,7 +21,6 @@ export function FollowButton({
   initialIsFollowing,
   variant = "onDark",
   followLabel = "Follow",
-  onChange,
 }: FollowButtonProps) {
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const [loading, setLoading] = useState(false);
@@ -30,15 +28,18 @@ export function FollowButton({
   const toggle = async () => {
     setLoading(true);
     try {
+      const unfollowing = isFollowing;
       const res = await fetch(`/api/users/${username}/follow`, {
-        method: isFollowing ? "DELETE" : "POST",
+        method: unfollowing ? "DELETE" : "POST",
       });
-      // A follow that already exists (409) or a delete of one that doesn't is
-      // the state we were trying to reach, not a failure.
-      if (res.ok || res.status === 409 || res.status === 404) {
-        const next = !isFollowing;
-        setIsFollowing(next);
-        onChange?.(next);
+      // Already in the state we were reaching for is not a failure — but scope
+      // it by direction. A blanket 404 would flip an unfollow to "following"
+      // when the username simply doesn't exist.
+      const alreadyThere = unfollowing
+        ? res.status === 404
+        : res.status === 409;
+      if (res.ok || alreadyThere) {
+        setIsFollowing(!unfollowing);
       } else if (res.status === 401) {
         window.location.href = "/sign-in";
       }

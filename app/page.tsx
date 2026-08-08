@@ -156,9 +156,12 @@ export default function Home() {
     // A preview that never resolves used to leave the title skeleton pulsing
     // indefinitely — the banner looked like it was still thinking, forever.
     // Every path below lands somewhere, including the one where nothing answers.
+    // `cancelled` matters as much as `settled`: without it a slow response for
+    // the previous URL would land on the current one and mark it failed.
     let settled = false;
+    let cancelled = false;
     const land = (preview: typeof clipboardPreview) => {
-      if (settled) return;
+      if (settled || cancelled) return;
       settled = true;
       if (preview) setClipboardPreview(preview);
       else setPreviewFailed(true);
@@ -171,6 +174,7 @@ export default function Home() {
         .then((r) => (r.ok ? r.json() : null))
         .then((data) => {
           if (!data) return land(null);
+          if (cancelled) return;
           if (data.is_own) {
             settled = true;
             setClipboardUrl(null);
@@ -196,7 +200,10 @@ export default function Home() {
         .catch(() => land(null));
     }
 
-    return () => clearTimeout(timeout);
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
   }, [clipboardUrl]);
 
   const handleSaveFromClipboard = async (allowFallback = false) => {

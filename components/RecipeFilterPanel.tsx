@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { LayoutGrid, List } from "lucide-react";
 import { SearchBar } from "@/components/SearchBar";
 import { RecipeList } from "@/components/RecipeList";
