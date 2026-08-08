@@ -1,0 +1,314 @@
+/* The Enamel Kitchen, applied to the one surface that never got it: deep green
+   ground, cream type, terracotta as the single door, and the product's own
+   cards doing the persuading instead of icon-heading-text cards describing it. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--background);
+}
+
+/* ─── Nav ─────────────────────────────────────────────────────────────────── */
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem clamp(1.25rem, 4vw, 3rem);
+  background: var(--primary);
+  border-bottom: 1px solid rgba(250, 247, 239, 0.08);
+}
+
+/* The Wordmark Rule: italic serif, 800, split terracotta/green — on green the
+   whole mark goes cream. It was set 700 roman in one flat color here. */
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  font-style: italic;
+  letter-spacing: -0.025em;
+  color: #faf7ef;
+}
+
+.navSignIn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 1rem;
+  border: 1.5px solid rgba(250, 247, 239, 0.35);
+  border-radius: var(--radius-full);
+  color: #faf7ef;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.navSignIn:hover {
+  background: rgba(250, 247, 239, 0.12);
+  border-color: rgba(250, 247, 239, 0.7);
+}
+
+/* ─── Hero ────────────────────────────────────────────────────────────────── */
+
+.hero {
+  background: var(--primary);
+  padding: clamp(3rem, 8vw, 6rem) clamp(1.25rem, 4vw, 3rem)
+    clamp(4rem, 9vw, 7rem);
+}
+
+.heroInner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  align-items: center;
+  gap: clamp(2rem, 6vw, 5rem);
+  max-width: 1160px;
+  margin: 0 auto;
+}
+
+/* No showcase collection to draw on — don't reserve the empty half. */
+.heroInnerSolo {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 760px;
+}
+
+.heroTitle {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: clamp(2.75rem, 6.5vw, 4.75rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  color: #faf7ef;
+  text-wrap: balance;
+}
+
+.heroTitle em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.heroSubtitle {
+  max-width: 34ch;
+  margin-top: 1.5rem;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  /* Tinted from the ground rather than greyed, per the design system. */
+  color: #cfd8cd;
+}
+
+.ctaButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  margin-top: 2.25rem;
+  padding: 0 2.25rem;
+  background: var(--orange);
+  color: white;
+  border-radius: var(--radius-full);
+  /* 1.2rem/700 clears the WCAG large-text bar on terracotta — see the
+     recorded exception in DESIGN.md. */
+  font-size: 1.2rem;
+  font-weight: 700;
+  box-shadow: 0 4px 24px rgba(200, 108, 68, 0.45);
+  transition: all 0.2s ease;
+}
+
+.ctaButton:hover {
+  background: var(--orange-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(200, 108, 68, 0.55);
+}
+
+.ctaNote {
+  margin-top: 0.875rem;
+  font-size: 0.9rem;
+  color: #b4c1b4;
+}
+
+/* ─── Hero proof: link in, card out ───────────────────────────────────────── */
+
+.heroProof {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 420px;
+  justify-content: center;
+}
+
+.sourceChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 100%;
+  padding: 0.625rem 1rem;
+  background: rgba(250, 247, 239, 0.1);
+  border: 1.5px solid rgba(250, 247, 239, 0.22);
+  border-radius: var(--radius-full);
+}
+
+.sourceMark {
+  display: inline-flex;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.sourceUrl {
+  overflow: hidden;
+  font-size: 0.85rem;
+  color: #cfd8cd;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.proofArrow {
+  color: rgba(250, 247, 239, 0.4);
+  line-height: 0;
+}
+
+.proofCard {
+  width: min(330px, 100%);
+}
+
+/* ─── Sections ────────────────────────────────────────────────────────────── */
+
+.section,
+.sectionAlt {
+  padding: clamp(3.5rem, 8vw, 6rem) 0;
+}
+
+.sectionAlt {
+  background: var(--surface-variant);
+}
+
+.sectionInner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 clamp(1.25rem, 4vw, 3rem);
+}
+
+.sectionBody {
+  max-width: 58ch;
+}
+
+.sectionTitle {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: clamp(1.85rem, 4vw, 2.6rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--primary);
+  text-wrap: balance;
+}
+
+.sectionBody {
+  margin-top: 1.125rem;
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: var(--text-secondary);
+}
+
+/* ─── Showcase: the real cards ────────────────────────────────────────────── */
+
+.showcase {
+  margin-top: 2.5rem;
+  /* Bleeds past the reading column so the row reads as a collection that
+     continues rather than a tidy set of three. */
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  /* Without this, snapping pulls the first card flush to the container edge on
+     load — scrolling straight past the inset that aligns it with the copy. */
+  scroll-padding-inline-start: max(
+    clamp(1.25rem, 4vw, 3rem),
+    calc((100vw - 1100px) / 2 + clamp(1.25rem, 4vw, 3rem))
+  );
+  -webkit-overflow-scrolling: touch;
+}
+
+.showcaseRow {
+  display: flex;
+  gap: 1.25rem;
+  width: max-content;
+  margin: 0;
+  padding: 0.5rem clamp(1.25rem, 4vw, 3rem) 1.5rem;
+  /* Start flush with the copy above it, then run off the right edge so the
+     collection reads as continuing rather than as a tidy set of five. */
+  padding-inline-start: max(
+    clamp(1.25rem, 4vw, 3rem),
+    calc((100vw - 1100px) / 2 + clamp(1.25rem, 4vw, 3rem))
+  );
+  list-style: none;
+}
+
+/* Equal heights — a card without a cook-time row would otherwise sit short
+   and the row would read as ragged rather than as a shelf. */
+.showcaseRow {
+  align-items: stretch;
+}
+
+.showcaseItem {
+  display: flex;
+  width: 280px;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+}
+
+.showcaseItem > * {
+  width: 100%;
+}
+
+/* ─── Close ───────────────────────────────────────────────────────────────── */
+
+.close {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(4rem, 9vw, 7rem) clamp(1.25rem, 4vw, 3rem);
+  background: var(--primary);
+  text-align: center;
+}
+
+.closeTitle {
+  max-width: 16ch;
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  color: #faf7ef;
+  text-wrap: balance;
+}
+
+.closeTitle em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+@media (max-width: 860px) {
+  .heroInner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.75rem;
+  }
+
+  .heroProof {
+    min-height: 0;
+  }
+
+  .heroSubtitle {
+    max-width: 46ch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ctaButton:hover {
+    transform: none;
+  }
+}
