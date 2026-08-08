@@ -59,7 +59,7 @@ export function FilterDropdown({
     : isMulti
       ? selected.length === 1
         ? selected[0]
-        : `${selected.length} tags`
+        : `${selected.length} ${label.toLowerCase()}`
       : value;
 
   // The filter row scrolls horizontally, and a scroll container clips its

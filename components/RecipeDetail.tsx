@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useId } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   X,
   ArrowLeft,
@@ -67,7 +67,6 @@ export function RecipeDetail({
   const [isEditingTags, setIsEditingTags] = useState(false);
   const deleteTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dialogRef = useModalDialog<HTMLDivElement>(onClose);
-  const titleId = useId();
   const hostname = sourceHostname(recipe.url);
 
   const handleDelete = () => {
@@ -181,7 +180,9 @@ export function RecipeDetail({
         className={styles.modal}
         role="dialog"
         aria-modal="true"
-        aria-labelledby={titleId}
+        // Not aria-labelledby: the heading it would point at unmounts in
+        // metadata-edit mode, which would leave the dialog with no name.
+        aria-label={title}
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}>
         {/* Nav bar — absolutely positioned on desktop (floats over image),
@@ -339,7 +340,7 @@ export function RecipeDetail({
           ) : (
             <>
               <div className={styles.titleRow}>
-                <h2 id={titleId}>{title}</h2>
+                <h2>{title}</h2>
                 <button
                   type="button"
                   onClick={() => setIsEditingMetadata(true)}

@@ -41,8 +41,10 @@ export async function POST(
 
     if (existing) {
       return NextResponse.json(
+        // 409 Conflict, matching POST /api/recipes — a duplicate is not a
+        // malformed request, and callers branch on this status.
         { error: "You already have this recipe saved" },
-        { status: 400 },
+        { status: 409 },
       );
     }
 
