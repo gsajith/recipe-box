@@ -5,16 +5,18 @@ import { supabaseServer as supabase } from "@/lib/supabase";
 // too little database activity in a week, so this runs one real query a day.
 // Vercel attaches `Authorization: Bearer <CRON_SECRET>` to cron requests.
 export async function GET(request: Request) {
-  if (request.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
+  const secret = process.env.CRON_SECRET;
+  if (!secret || request.headers.get("authorization") !== `Bearer ${secret}`) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  const { count, error } = await supabase
+  const { error } = await supabase
     .from("user_profiles")
     .select("clerk_user_id", { count: "exact", head: true });
 
   if (error) {
-    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+    console.error("keepalive query failed", error);
+    return NextResponse.json({ ok: false }, { status: 500 });
   }
-  return NextResponse.json({ ok: true, users: count });
+  return NextResponse.json({ ok: true });
 }
