@@ -15,6 +15,7 @@ const isPublicRoute = createRouteMatcher([
   "/share-target(.*)", // PWA share target — auth handled in the page itself
   "/opengraph-image(.*)", // OG image — must be public for link previews
   "/twitter-image(.*)",   // Twitter card image
+  "/api/keepalive",  // Vercel cron, no Clerk session; the handler checks CRON_SECRET
 ]);
 
 // Routes that skip the onboarding username check
