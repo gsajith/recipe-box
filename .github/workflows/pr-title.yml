@@ -1,0 +1,27 @@
+name: PR title
+
+# Merges take their subject from the PR title, so it has to be a Conventional Commit too (see
+# commitlint.config.mjs). Commits made locally are checked by the husky commit-msg hook.
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+
+jobs:
+  pr-title:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Reads the pnpm version from packageManager in package.json.
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Through env, not interpolated into the script, so a title can't inject shell.
+      - run: printf '%s\n' "$TITLE" | pnpm exec commitlint
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
